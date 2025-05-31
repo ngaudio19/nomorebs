@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>No More Corporate Bullshit Options</title>
+  <link rel="stylesheet" href="options.css">
+</head><body>
+  <div class="container">
+    <h1>Settings</h1>
+    <p>This extension uses a Large Language Model (LLM) like OpenAI's GPT to analyze posts.
+       Please provide your API key.
+    </p>
+    <p><strong>Important:</strong> You are responsible for any costs associated with API usage.
+        Your API key is stored locally in your browser and is not shared externally by this extension beyond its necessary use with the LLM provider.
+    </p>
+
+    <div class="form-group">
+      <label for="apiKey">OpenAI API Key:</label>
+      <input type="password" id="apiKey" placeholder="Enter your OpenAI API Key (e.g., sk-...)">
+    </div>
+
+    <div class="form-group">
+        <label for="apiEndpoint">API Endpoint URL (Optional - Overrides Default):</label>
+        <input type="text" id="apiEndpoint" placeholder="Default: https://api.openai.com/v1/chat/completions">
+        <small>Leave blank to use the default OpenAI endpoint. Only change if you know what you are doing (e.g., using a proxy or different compatible API).</small>
+    </div>
+
+    <div class="form-group">
+        <label for="modelName">Model Name (Optional - Overrides Default):</label>
+        <input type="text" id="modelName" placeholder="Default: gpt-4o-mini (or gpt-3.5-turbo, gpt-4-turbo etc.)">
+        <small>Leave blank to use the default model specified in the extension. You can specify other compatible OpenAI models here.</small>
+    </div>
+
+
+    <button id="saveBtn">Save Settings</button>
+    <p id="status" class="status-message"></p>
+  </div>
+  <script src="options.js"></script>
+</body>
+</html>
