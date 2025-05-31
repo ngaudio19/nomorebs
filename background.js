@@ -23,30 +23,35 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       const apiEndpoint = settings.apiEndpoint || DEFAULT_OPENAI_ENDPOINT;
       const modelName = settings.modelName || DEFAULT_OPENAI_MODEL;
 
-      const systemPrompt = `You are a joyful yet strict analyst of online content, with a focus on logical reasoning. Your mission is to examine the following LinkedIn post and identify any logical fallacies present. Your analysis should be direct, honest, and engaging for the user.
+      const systemPrompt = `You are a sharp-witted, slightly cheeky, and brutally honest analyst of online discourse. Your specialty is sniffing out logical fallacies and manipulative language in LinkedIn posts. You address the user directly and aren't afraid to call a spade a spade (or a scoundrel a scoundrel, if their logic is particularly heinous).
 
-Please provide your analysis in JSON format with the following structure:
+Your mission is to analyze the provided LinkedIn post. Pay close attention to:
+1.  **Intent:** Does the author seem to be trying to subtly (or not so subtly) dupe the reader? Are they arguing from a place of strong, unexamined emotion rather than logic?
+2.  **Specific Logical Fallacies:** Focus primarily on identifying: Appeal to Authority (especially unqualified), Ad Hominem, False Equivalence, Straw Man, Bandwagon (Appeal to Popularity), Begging the Question, False Cause (Post Hoc), Appeal to Emotion, No True Scotsman, Survivorship Bias, and Anecdotal Evidence. Give less weight to very minor slip-ups like a slight Hasty Generalization unless it's central to a flawed argument. Some fallacies (like Ad Hominem or clear emotional manipulation) are naughtier than others.
+
+Provide your analysis in JSON format with the following structure:
 {
-  "summary": "A brief, fun overview of the post's logical coherence (or lack thereof). Aim for 1-2 sentences directly addressing the user.",
+  "summary": "A brief, engaging, and direct-to-user overview of the post's logical soundness (or spectacular lack thereof). What's the main vibe here? Keep it to 2-3 sentences.",
   "logical_fallacies": [
     {
-      "type": "Name of Fallacy (e.g., Ad Hominem, Straw Man, Appeal to Unqualified Authority, Hasty Generalization, False Dichotomy, Slippery Slope, Anecdotal Evidence, Appeal to Emotion, Bandwagon Fallacy)",
-      "quote": "The specific text snippet (max 20 words) from the post that exhibits this fallacy.",
-      "explanation": "A brief, user-focused explanation (max 1-2 sentences) of why this is a fallacy in this context.",
-      "learn_more_url": "Optional: A URL to a resource explaining this fallacy."
+      "type": "Name of the specific fallacy identified from the list above.",
+      "quote": "The exact text snippet (max 25 words) from the post that best exemplifies this fallacy.",
+      "explanation": "A concise, cheeky, and user-focused explanation (max 2 sentences) of why this is a fallacy in this context and why it's a bit naughty. If the fallacy is particularly egregious, feel free to use terms like 'scoundrel' or 'miscreant' in your description of the tactic.",
+      "learn_more_url": "A valid URL to a reputable resource (like Wikipedia or a university writing center page) that explains this specific fallacy. (e.g., https://en.wikipedia.org/wiki/Ad_hominem)"
     }
   ],
-  "flagrancy_rating": "A single integer from 1 to 5 indicating the overall flagrancy of logical errors in the post, where 1 is 'Minor Oopsie' and 5 is 'Logically Catastrophic'. You can use your own fun labels for these levels.",
-  "overall_vibe": "A single word or short phrase describing the overall logical vibe of the post (e.g., 'Reasonably sound', 'A bit wobbly', 'Deeply flawed')."
+  "bullshit_naughtiness_rating": "A single integer from 1 (virtually angelic) to 10 (a masterclass in misdirection by a true miscreant) indicating the overall severity and manipulative intent of logical errors in the post.",
+  "naughtiness_justification": "A brief, punchy justification for the naughtiness rating you've assigned. Why does it get that score? (1-2 sentences)"
 }
 
-If no specific fallacies are found, return an empty array for logical_fallacies and a summary like 'Hooray! No obvious logical leaps detected. Carry on!' and a flagrancy_rating of 1 with a vibe of 'Logically serene'. Be concise and fun!`;
+If no significant fallacies are found, return an empty array for \`logical_fallacies\`, a \`summary\` like 'Well, color me surprised! This post seems to be navigating the treacherous waters of logic with surprising grace. No major red flags here, user!', a \`bullshit_naughtiness_rating\` of 1 or 2, and an appropriate \`naughtiness_justification\`.
+Be bold, be honest, and make the user feel a little smarter for having you around.`;
 
-      const userPrompt = `Analyze this LinkedIn post for logical fallacies:\n\n---\n${postText}\n---`;
+      const userPrompt = `Alright, you brilliant linguistic detective, time to dissect this LinkedIn post. Show me the logical acrobatics (or face-plants):\n\n---\n${postText}\n---`;
 
       try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 seconds timeout
+        const timeoutId = setTimeout(() => controller.abort(), 35000); // 35 seconds timeout
 
         const response = await fetch(apiEndpoint, {
           method: "POST",
@@ -61,8 +66,8 @@ If no specific fallacies are found, return an empty array for logical_fallacies 
               { role: "system", content: systemPrompt },
               { role: "user", content: userPrompt }
             ],
-            temperature: 0.4, // Slightly higher for more playful tone
-            max_tokens: 1500,
+            temperature: 0.5, // Increased slightly for a more 'cheeky' character
+            max_tokens: 1800, // Increased slightly for more detailed justifications if needed
             response_format: { type: "json_object" }
           })
         });
@@ -71,54 +76,51 @@ If no specific fallacies are found, return an empty array for logical_fallacies 
         if (!response.ok) {
           const errorBody = await response.text();
           let errorData;
-          try {
-            errorData = JSON.parse(errorBody);
-          } catch (e) {
-            errorData = { message: errorBody || response.statusText };
-          }
+          try { errorData = JSON.parse(errorBody); }
+          catch (e) { errorData = { message: errorBody || response.statusText }; }
           console.error("LLM API Error Details:", errorData);
-          sendResponse({ error: `API Error (${response.status}): ${errorData.error?.message || errorData.message || 'Unknown error from API'}. Check API key, endpoint, model, and permissions.` });
+          sendResponse({ error: `API Error (${response.status}): ${errorData.error?.message || errorData.message || 'Unknown error from API'}. Check OpenAI status, your API key, account credits, and model access.` });
           return;
         }
 
         const data = await response.json();
+        let llmResponseObject = null;
 
-        let llmResponseContent;
-        if (data.choices && data.choices [0] && data.choices [0].message) {
-          if (typeof data.choices [0].message.content === 'string') {
-            llmResponseContent = data.choices [0].message.content;
-          } else if (typeof data.choices [0].message === 'object' && data.choices [0].message.tool_calls === undefined) {
-            sendResponse({ llmResponse: data.choices [0].message });
-            return;
-          }
+        if (data.choices && data.choices[0] && data.choices[0].message) {
+            if (typeof data.choices[0].message.content === 'string') {
+                try {
+                    llmResponseObject = JSON.parse(data.choices[0].message.content);
+                } catch (parseError) {
+                    console.error("Error parsing LLM JSON string response:", parseError, "\nRaw string response:", data.choices[0].message.content);
+                    sendResponse({ error: `LLM returned a string, but it wasn't valid JSON. Content: ${data.choices[0].message.content}` });
+                    return;
+                }
+            } else if (typeof data.choices[0].message === 'object' && data.choices[0].message.tool_calls === undefined) {
+                // If response_format: { type: "json_object" } works perfectly, this might be the direct object.
+                llmResponseObject = data.choices[0].message;
+            }
+        } else if (typeof data === 'object' && data !== null && Object.keys(data).length > 0 && !(data.choices && data.choices[0])) {
+             // Fallback if the response is the direct JSON object not nested in choices
+            console.warn("LLM response was a direct object, not nested as expected. Using it directly:", data);
+            llmResponseObject = data;
         }
 
-        if (llmResponseContent) {
-          try {
-            const parsedResponse = JSON.parse(llmResponseContent);
-            sendResponse({ llmResponse: parsedResponse });
-          } catch (parseError) {
-            console.error("Error parsing LLM JSON string response:", parseError, "\nRaw string response:", llmResponseContent);
-            sendResponse({ llmResponse: `Could not parse JSON from LLM, raw response: ${llmResponseContent}` });
-          }
-        } else if (typeof data === 'object' && data !== null && Object.keys(data).length > 0 && !(data.choices && data.choices [0])) {
-          console.warn("LLM response was a direct object, not nested as expected. Trying to use it directly:", data);
-          sendResponse({ llmResponse: data });
+        if (llmResponseObject) {
+            sendResponse({ llmResponse: llmResponseObject });
         } else {
-          console.error("Unexpected API response structure or empty content:", data);
-          sendResponse({ error: "Received an unexpected or empty response structure from the LLM." });
+            console.error("Unexpected API response structure or empty content:", data);
+            sendResponse({ error: "Received an unexpected or empty response structure from the LLM." });
         }
 
       } catch (error) {
         console.error("Error calling LLM API:", error);
         if (error.name === 'AbortError') {
-          sendResponse({ error: "LLM API request timed out after 30 seconds." });
+          sendResponse({ error: "LLM API request timed out. The server is probably swamped or the request is too complex." });
         } else {
-          sendResponse({ error: `Network or other error calling LLM: ${error.message}. Ensure the API endpoint in manifest.json host_permissions is correct and reachable.` });
+          sendResponse({ error: `Network or other error calling LLM: ${error.message}.` });
         }
       }
     })();
-
     return true;
   }
 });
@@ -133,4 +135,4 @@ chrome.runtime.onInstalled.addListener(function(details) {
   }
 });
 
-console.log("No More BS (LLM Edition) Background Script Loaded.");
+console.log("No More BS (LLM Edition) Background Script Loaded - Cheeky Edition!");
