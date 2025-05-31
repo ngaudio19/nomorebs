@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>No More Corporate Bullshit</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <h1>No More Corporate Bullshit</h1>
+    <button id="analyzeBtn">Analyze Post</button>
+    <div id="statusMessages">
+        <p id="loadingMessage" style="display:none;">Asking the AI Overlords... (this might take a moment)</p>
+        <p id="errorMessage" class="error-message" style="display:none;"></p>
+        <p id="configMessage" class="config-message" style="display:none;">
+            API Key not configured. Please <a href="#" id="openOptionsLink">go to options</a> to set it up.
+        </p>
+    </div>
+    <div id="results" style="display:none;">
+      <h2>Analysis:</h2>
+      <div id="llmResponseContainer">
+        </div>
+    </div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>
