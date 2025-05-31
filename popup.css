@@ -1,198 +1,187 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
 body {
-  font-family: 'Inter', sans-serif; /* Figma's font */
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   font-size: 14px;
-  line-height: 1.5;
-  width: 380px;
-  padding: 20px;
-  background-color: #f7f7f7; /* Light gray background */
-  color: #333;
+  line-height: 1.6;
+  width: 390px; /* Slightly wider */
+  padding: 15px;
+  background-color: #F3F4F6; /* Lighter grey, closer to Figma */
+  color: #111827; /* Darker primary text */
 }
 
 .container {
-  background-color: #fff;
-  padding: 25px;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  background-color: #FFFFFF;
+  padding: 20px 25px 25px 25px;
+  border-radius: 12px; /* More rounded corners */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 h1 {
-  font-size: 20px;
-  font-weight: 600;
-  color: #1c1e21;
+  font-size: 20px; /* Adjusted */
+  font-weight: 700; /* Bolder */
+  color: #1F2937; /* Darker shade */
   text-align: center;
   margin-top: 0;
-  margin-bottom: 20px;
+  margin-bottom: 10px; /* Reduced margin */
 }
 
 .motivational-copy {
   font-size: 13px;
-  color: #555;
+  color: #4B5563; /* Softer text color */
   text-align: center;
-  margin-bottom: 15px;
-  font-style: italic;
+  margin-bottom: 20px; /* Increased margin */
+  min-height: 1.5em; /* Prevent layout shift */
 }
 
-button {
-  background-color: #007AFF; /* Figma's blue */
+button#analyzeBtn { /* More specific selector for the main button */
+  background-color: #10B981; /* Emerald Green */
   color: white;
   border: none;
   padding: 12px 20px;
   text-align: center;
   font-size: 15px;
-  font-weight: 500;
-  border-radius: 6px;
+  font-weight: 600; /* Bolder text */
+  border-radius: 8px; /* More rounded */
   cursor: pointer;
   width: 100%;
   margin-bottom: 20px;
-  transition: background-color 0.2s ease;
+  transition: background-color 0.2s ease-in-out, transform 0.1s ease;
 }
 
-button:hover {
-  background-color: #005FE3;
+button#analyzeBtn:hover {
+  background-color: #059669; /* Darker Emerald Green */
 }
+button#analyzeBtn:active {
+  transform: scale(0.98);
+}
+
 
 #statusMessages p {
   text-align: center;
-  padding: 10px;
+  padding: 10px 12px;
   border-radius: 6px;
   margin-bottom: 15px;
   font-size: 13px;
+  border-width: 1px;
+  border-style: solid;
 }
 
 #loadingMessage {
-  color: #007AFF;
-  background-color: #e6faff;
-  border: 1px solid #b3e0ff;
+  color: #065F46; /* Dark Green text */
+  background-color: #D1FAE5; /* Light Green background */
+  border-color: #A7F3D0;
 }
 
 .error-message {
-  color: #ff3d00;
-  background-color: #ffe0d2;
-  border: 1px solid #ff9e80;
+  color: #991B1B; /* Dark Red text */
+  background-color: #FEE2E2; /* Light Red background */
+  border-color: #FECACA;
 }
 
 .config-message {
-  color: #ffa000;
-  background-color: #fff3e0;
-  border: 1px solid #ffca28;
+  color: #92400E; /* Dark Amber text */
+  background-color: #FEF3C7; /* Light Amber background */
+  border-color: #FDE68A;
 }
 
 .config-message a {
-  color: #007AFF;
+  color: #10B981; /* Green link */
   font-weight: 600;
+  text-decoration: none;
+}
+.config-message a:hover {
+  text-decoration: underline;
 }
 
-#results h2 {
-  font-size: 18px;
+#results {
+    margin-top: 15px;
+}
+
+.analysis-section {
+    background-color: #F9FAFB; /* Very light grey for sections */
+    border: 1px solid #E5E7EB; /* Subtle border */
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+}
+.analysis-section:last-child {
+    margin-bottom: 0;
+}
+
+
+.analysis-section h3 {
+  font-size: 16px; /* Slightly smaller section headers */
   font-weight: 600;
-  color: #1c1e21;
+  color: #111827;
   margin-top: 0;
-  margin-bottom: 15px;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 10px;
-}
-
-#llmResponseContainer {
-  margin-top: 10px;
-  padding: 15px;
-  background-color: #f9f9f9;
-  border: 1px solid #eee;
-  border-radius: 6px;
-  font-size: 13px;
-  line-height: 1.6;
-}
-
-#overview {
-  font-weight: 500;
   margin-bottom: 10px;
-  color: #333;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #E5E7EB;
 }
 
-#flagrancy {
-  font-size: 16px;
-  margin-bottom: 15px;
+#overviewSection p { /* For the main summary */
+    font-size: 14px;
+    color: #374151;
+    line-height: 1.7;
 }
 
-.fallacy-item {
-  margin-bottom: 15px;
-  padding: 10px;
-  border-radius: 4px;
-  background-color: #fff;
-  border: 1px solid #f0f0f0;
+.rating-value {
+    font-size: 24px; /* Larger rating */
+    font-weight: 700;
+    color: #10B981; /* Green rating */
+    text-align: center;
+    margin-bottom: 5px;
+}
+
+.justification-text {
+    font-size: 13px;
+    color: #4B5563;
+    text-align: center;
+    font-style: italic;
+}
+
+#fallaciesContainer .fallacy-item {
+  margin-bottom: 12px;
+  padding: 12px;
+  border-radius: 6px;
+  background-color: #FFFFFF; /* White background for fallacy cards */
+  border: 1px solid #E5E7EB;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+}
+#fallaciesContainer .fallacy-item:last-child {
+    margin-bottom: 0;
 }
 
 .fallacy-type {
   font-weight: 600;
-  color: #007AFF;
-  margin-bottom: 5px;
+  color: #10B981; /* Green for fallacy type */
+  margin-bottom: 4px;
+  font-size: 14px;
 }
 
 .fallacy-quote {
   font-style: italic;
-  color: #555;
-  margin-bottom: 5px;
+  color: #4B5563; /* Softer color for quote */
+  margin-bottom: 6px;
+  padding-left: 10px;
+  border-left: 3px solid #A7F3D0; /* Light green accent */
+  font-size: 13px;
 }
 
 .fallacy-explanation {
-  color: #333;
+  color: #374151;
+  font-size: 13px;
 }
 
 .learn-more {
   font-size: 12px;
-  color: #007AFF;
+  color: #0E7490; /* A different accent color for links */
   cursor: pointer;
-  margin-left: 5px;
+  text-decoration: none;
+  display: inline-block;
+  margin-top: 6px;
 }
-
-#interactionArea {
-    margin-top: 20px;
-    padding: 15px;
-    background-color: #f0f0f0;
-    border-radius: 6px;
-}
-
-#interactionArea h3 {
-    font-size: 16px;
-    margin-top: 0;
-    margin-bottom: 10px;
-}
-
-#responseType {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 14px;
-}
-
-#getResponseBtn {
-    background-color: #2ecc71; /* Green button for response */
-    color: white;
-    border: none;
-    padding: 10px 15px;
-    text-align: center;
-    font-size: 14px;
-    border-radius: 4px;
-    cursor: pointer;
-    width: auto;
-    display: block;
-    margin-top: 10px;
-    transition: background-color 0.2s ease;
-}
-
-#getResponseBtn:hover {
-    background-color: #27ae60;
-}
-
-#getResponseBtn:disabled {
-    background-color: #95a5a6;
-    cursor: not-allowed;
-}
-
-#responseMessage {
-    margin-top: 10px;
-    font-size: 13px;
-    color: #2c3e50;
-    font-style: italic;
+.learn-more:hover {
+    text-decoration: underline;
 }
