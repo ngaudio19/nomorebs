@@ -6,6 +6,27 @@ document.addEventListener('DOMContentLoaded', function() {
   const errorMessage = document.getElementById('errorMessage');
   const configMessage = document.getElementById('configMessage');
   const openOptionsLink = document.getElementById('openOptionsLink');
+  const motivationalCopyDiv = document.getElementById('motivationalCopy');
+  const overviewParagraph = document.getElementById('overview');
+  const flagrancyParagraph = document.getElementById('flagrancy');
+  const fallaciesContainer = document.getElementById('fallaciesContainer');
+  const interactionArea = document.getElementById('interactionArea');
+  const responseTypeSelect = document.getElementById('responseType');
+  const getResponseBtn = document.getElementById('getResponseBtn');
+  const responseMessageParagraph = document.getElementById('responseMessage');
+
+  const motivationalPhrases = [
+    "Time to filter the noise.",
+    "Intelligence is everywhere now. Sucks for dumb content.",
+    "Let's dissect this with a smile.",
+    "Ready to unmask the truth?",
+    "Prepare for delightful discernment."
+  ];
+
+  if (motivationalCopyDiv) {
+    const randomIndex = Math.floor(Math.random() * motivationalPhrases.length);
+    motivationalCopyDiv.textContent = motivationalPhrases [randomIndex];
+  }
 
   if (openOptionsLink) {
     openOptionsLink.addEventListener('click', (e) => {
@@ -14,19 +35,51 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  analyzeBtn.addEventListener('click', async () => {
-    llmResponseContainer.innerHTML = '';
+  let currentFallacyIndex = -1; // To track which fallacy to respond to
+
+  getResponseBtn.addEventListener('click', () => {
+      if (currentFallacyIndex >= 0) {
+          const responseType = responseTypeSelect.value;
+          const fallacy = analysisResults.logical_fallacies?.[currentFallacyIndex];
+          if (fallacy) {
+              let message = '';
+              switch (responseType) {
+                  case 'kind':
+                      message = `😊 That's an interesting way to put it! Perhaps a different perspective could be...`;
+                      break;
+                  case 'standard':
+                      message = `🤔 The issue here is a classic case of ${fallacy.type}. Specifically...`;
+                      break;
+                  case 'smartass':
+                      message = `😎 Oh, you sweet summer child. That's like saying... (in a logically flawed way, of course).`;
+                      break;
+              }
+              responseMessageParagraph.textContent = message;
+              interactionArea.style.display = 'block';
+          } else {
+              responseMessageParagraph.textContent = "Error: Could not retrieve fallacy details.";
+              interactionArea.style.display = 'none';
+          }
+      } else {
+          responseMessageParagraph.textContent = "Please click 'Learn More' on a fallacy first.";
+          interactionArea.style.display = 'none';
+      }
+  });
+
+  async function handleAnalyzeClick() {
+    llmResponseContainer.style.display = 'none';
     resultsDiv.style.display = 'none';
     errorMessage.style.display = 'none';
     configMessage.style.display = 'none';
     loadingMessage.style.display = 'block';
     analyzeBtn.disabled = true;
+    interactionArea.style.display = 'none';
+    currentFallacyIndex = -1; // Reset
 
     try {
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 
-      if (tab && tab.id && !tab.url.startsWith("chrome://")) { // Added check for chrome:// URLs
-        // Check for API key first
+      if (tab && tab.id && !tab.url.startsWith("chrome://")) {
         const settings = await chrome.storage.local.get(['apiKey']);
         if (!settings.apiKey) {
           loadingMessage.style.display = 'none';
@@ -35,16 +88,12 @@ document.addEventListener('DOMContentLoaded', function() {
           return;
         }
 
-        // Ensure content script can be injected
         await chrome.scripting.executeScript({
             target: { tabId: tab.id },
             files: ['content.js']
-        }).catch(err => { // Catch error if injection fails (e.g., on chrome web store)
-            console.warn("Failed to inject content script, or already injected:", err);
-            // We can often proceed if it's already injected by manifest,
-            // but if it fails for permissions, the sendMessage below will fail.
+        }).catch(err => {
+            console.warn("Failed to inject content script:", err);
         });
-
 
         const response = await chrome.tabs.sendMessage(tab.id, { action: "getPostText" });
 
@@ -54,14 +103,17 @@ document.addEventListener('DOMContentLoaded', function() {
             action: "analyzeWithLLM",
             text: postText
           });
+          window.analysisResults = analysisResults; // Store for response logic
 
           loadingMessage.style.display = 'none';
           analyzeBtn.disabled = false;
+          resultsDiv.style.display = 'block';
+          llmResponseContainer.style.display = 'block';
 
           if (analysisResults.error) {
             displayError(analysisResults.error);
           } else if (analysisResults.llmResponse) {
-            displayResults(analysisResults.llmResponse);
+            displayAnalysis(analysisResults.llmResponse);
           } else {
             displayError("Received an unexpected response from the analysis service.");
           }
@@ -73,32 +125,22 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
           loadingMessage.style.display = 'none';
           analyzeBtn.disabled = false;
-          displayError("Could not extract text. Ensure the post is visible and try clicking on it first, or refresh the page.");
+          displayError("Could not extract text. Ensure the post is visible and try again.");
         }
       } else {
         loadingMessage.style.display = 'none';
         analyzeBtn.disabled = false;
-        let errorMsgText = "Could not access the active tab or operate on this page (e.g., internal Chrome pages, Chrome Web Store).";
-        if(tab && tab.url.startsWith("chrome://")) {
-            errorMsgText = "This extension cannot operate on internal Chrome pages (e.g., chrome://extensions).";
-        }
-        displayError(errorMsgText);
+        displayError("This extension cannot operate on this page.");
       }
     } catch (error) {
       console.error("Error in popup:", error);
       loadingMessage.style.display = 'none';
       analyzeBtn.disabled = false;
-      let errorMsg = `An error occurred: ${error.message}. Check extension console.`;
-      if (error.message && error.message.toLowerCase().includes("cannot access contents of url") || error.message.toLowerCase().includes("cannot access a chrome extension url")) {
-        errorMsg = "This extension cannot run on the current page (e.g., Chrome Web Store, other extension pages, or internal browser pages). Try it on a LinkedIn page.";
-      } else if (error.message && error.message.toLowerCase().includes("no matching message handler")) {
-        errorMsg += " The background script might not be running or didn't load correctly. Try reloading the extension and the LinkedIn page."
-      } else if (error.message && error.message.toLowerCase().includes("receiving end does not exist")) {
-        errorMsg = "Could not communicate with the LinkedIn page. Please refresh the LinkedIn page and try again. If this persists, the content script might be blocked or failing.";
-      }
-      displayError(errorMsg);
+      displayError(`An error occurred: ${error.message}`);
     }
-  });
+  }
+
+  analyzeBtn.addEventListener('click', handleAnalyzeClick);
 
   function displayError(message) {
     errorMessage.textContent = message;
@@ -106,93 +148,67 @@ document.addEventListener('DOMContentLoaded', function() {
     resultsDiv.style.display = 'none';
   }
 
-  function displayResults(llmResponse) {
-    resultsDiv.style.display = 'block';
-    errorMessage.style.display = 'none';
-    llmResponseContainer.innerHTML = ''; // Clear previous results
-
-    if (typeof llmResponse === 'string') {
-        const pre = document.createElement('pre');
-        pre.textContent = llmResponse;
-        llmResponseContainer.appendChild(pre);
-    } else if (typeof llmResponse === 'object' && llmResponse !== null) {
-        if (llmResponse.summary) {
-            const h3 = document.createElement('h3');
-            h3.textContent = "LLM Summary:";
-            llmResponseContainer.appendChild(h3);
-            const p = document.createElement('p');
-            p.textContent = llmResponse.summary;
-            llmResponseContainer.appendChild(p);
-        }
-
-        if (llmResponse.logical_fallacies && llmResponse.logical_fallacies.length > 0) {
-            const h3 = document.createElement('h3');
-            h3.textContent = "Potential Logical Fallacies:";
-            llmResponseContainer.appendChild(h3);
-            const ul = document.createElement('ul');
-            llmResponse.logical_fallacies.forEach(f => {
-                const li = document.createElement('li');
-                li.innerHTML = `<strong>${f.type || 'Fallacy'}:</strong> ${f.explanation || ''} <br><em>Identified: "${f.quote || 'N/A'}"</em>`;
-                ul.appendChild(li);
-            });
-            llmResponseContainer.appendChild(ul);
-        } else if (llmResponse.logical_fallacies) { // Check if array exists even if empty
-             const p = document.createElement('p');
-             p.textContent = "No specific logical fallacies identified by the LLM.";
-             llmResponseContainer.appendChild(p);
-        }
-
-        if (llmResponse.marketing_bullshit && llmResponse.marketing_bullshit.length > 0) {
-            const h3 = document.createElement('h3');
-            h3.textContent = "Potential Marketing Bullshit:";
-            llmResponseContainer.appendChild(h3);
-            const ul = document.createElement('ul');
-            llmResponse.marketing_bullshit.forEach(b => {
-                const li = document.createElement('li');
-                li.innerHTML = `<strong>${b.term || 'Term'}:</strong> ${b.critique || ''} <br><em>Identified: "${b.quote || 'N/A'}"</em>`;
-                ul.appendChild(li);
-            });
-            llmResponseContainer.appendChild(ul);
-        } else if (llmResponse.marketing_bullshit) { // Check if array exists even if empty
-            const p = document.createElement('p');
-            p.textContent = "No specific marketing bullshit identified by the LLM.";
-            llmResponseContainer.appendChild(p);
-        }
-
-        if(llmResponse.overall_rating){
-            const h3 = document.createElement('h3');
-            h3.textContent = "Overall Rating:";
-            llmResponseContainer.appendChild(h3);
-            const p = document.createElement('p');
-            p.textContent = llmResponse.overall_rating;
-            llmResponseContainer.appendChild(p);
-        }
-
-        // If none of the expected fields are there but it's an object, show raw JSON
-        if (!llmResponse.summary && !(llmResponse.logical_fallacies && llmResponse.logical_fallacies.length > 0) && !(llmResponse.marketing_bullshit && llmResponse.marketing_bullshit.length > 0)) {
-            if(Object.keys(llmResponse).length > 0 && !(llmResponse.logical_fallacies || llmResponse.marketing_bullshit)){ // Avoid if keys are just empty arrays
-                const p = document.createElement('p');
-                p.textContent = "LLM returned structured data, but not in the expected format. Raw response:"
-                llmResponseContainer.appendChild(p);
-                const pre = document.createElement('pre');
-                pre.textContent = JSON.stringify(llmResponse, null, 2);
-                llmResponseContainer.appendChild(pre);
-            } else if (!llmResponse.logical_fallacies && !llmResponse.marketing_bullshit) {
-                // If the arrays are present but empty, and no summary, this indicates successful parse but no findings.
-                // The specific messages for "no fallacies/bullshit identified" would have already been added.
-                // So we might not need to add anything extra here unless it's a truly empty object.
-                if(Object.keys(llmResponse).length === 0) {
-                    const p = document.createElement('p');
-                    p.textContent = "LLM analysis returned an empty response.";
-                    llmResponseContainer.appendChild(p);
-                }
-            }
-        }
-
+  function displayAnalysis(llmResponse) {
+    overviewParagraph.textContent = llmResponse.summary || "No overview provided.";
+    let poopEmojis = '';
+    const flagrancyScore = parseInt(llmResponse.flagrancy_rating);
+    if (!isNaN(flagrancyScore) && flagrancyScore >= 1 && flagrancyScore <= 5) {
+      poopEmojis = '💩'.repeat(flagrancyScore);
+    } else if (llmResponse.flagrancy_rating) {
+      poopEmojis = `Flagrancy: ${llmResponse.flagrancy_rating}`; // Show text if not a number
     } else {
-        const p = document.createElement('p');
-        p.textContent = "Could not parse the LLM response format, or response was empty.";
-        llmResponseContainer.appendChild(p);
+      poopEmojis = "Flagrancy: Not rated.";
+    }
+    flagrancyParagraph.textContent = poopEmojis;
+
+    fallaciesContainer.innerHTML = '';
+    if (llmResponse.logical_fallacies && llmResponse.logical_fallacies.length > 0) {
+      llmResponse.logical_fallacies.forEach((fallacy, index) => {
+        const fallacyDiv = document.createElement('div');
+        fallacyDiv.classList.add('fallacy-item');
+
+        const typeHeading = document.createElement('h4');
+        typeHeading.classList.add('fallacy-type');
+        typeHeading.textContent = fallacy.type || 'Unknown Fallacy';
+
+        const quotePara = document.createElement('p');
+        quotePara.classList.add('fallacy-quote');
+        quotePara.textContent = `"${fallacy.quote || 'No quote provided.'}"`;
+
+        const explanationPara = document.createElement('p');
+        explanationPara.classList.add('fallacy-explanation');
+        explanationPara.textContent = fallacy.explanation || 'No explanation provided.';
+
+        const learnMoreSpan = document.createElement('span');
+        learnMoreSpan.classList.add('learn-more');
+        learnMoreSpan.textContent = 'Learn More';
+        learnMoreSpan.addEventListener('click', () => {
+            // Placeholder for "Learn More" functionality - could open a new tab, etc.
+            alert(`Learn more about ${fallacy.type}`);
+        });
+
+        const respondButton = document.createElement('button');
+        respondButton.textContent = 'Respond';
+        respondButton.classList.add('response-button');
+        respondButton.addEventListener('click', () => {
+            currentFallacyIndex = index;
+            getResponseBtn.disabled = false;
+            interactionArea.style.display = 'block';
+            responseMessageParagraph.textContent = ''; // Clear previous message
+        });
+
+        fallacyDiv.appendChild(typeHeading);
+        fallacyDiv.appendChild(quotePara);
+        fallacyDiv.appendChild(explanationPara);
+        fallacyDiv.appendChild(learnMoreSpan);
+        fallacyDiv.appendChild(respondButton);
+
+        fallaciesContainer.appendChild(fallacyDiv);
+      });
+    } else {
+      const noFallacies = document.createElement('p');
+      noFallacies.textContent = "No logical fallacies detected (or at least, none that I'm brave enough to point out 😉).";
+      fallaciesContainer.appendChild(noFallacies);
     }
   }
 });
