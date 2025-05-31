@@ -6,10 +6,11 @@
 </head>
 <body>
   <div class="container">
-    <h1>No More Corporate Bullshit</h1>
+    <h1>✨ No More Corporate Bullshit</h1>
+    <div id="motivationalCopy" class="motivational-copy"></div>
     <button id="analyzeBtn">Analyze Post</button>
     <div id="statusMessages">
-        <p id="loadingMessage" style="display:none;">Asking the AI Overlords... (this might take a moment)</p>
+        <p id="loadingMessage" style="display:none;">Summoning the truth serum...</p>
         <p id="errorMessage" class="error-message" style="display:none;"></p>
         <p id="configMessage" class="config-message" style="display:none;">
             API Key not configured. Please <a href="#" id="openOptionsLink">go to options</a> to set it up.
@@ -18,7 +19,20 @@
     <div id="results" style="display:none;">
       <h2>Analysis:</h2>
       <div id="llmResponseContainer">
-        </div>
+          <p id="overview"></p>
+          <p id="flagrancy"></p>
+          <div id="fallaciesContainer"></div>
+      </div>
+    </div>
+    <div id="interactionArea" style="display: none;">
+        <h3>Get a Response:</h3>
+        <select id="responseType">
+            <option value="kind">😊 Kind Response</option>
+            <option value="standard">🤔 Standard Explanation</option>
+            <option value="smartass">😎 Smart-ass Remark</option>
+        </select>
+        <button id="getResponseBtn" disabled>Get Response</button>
+        <p id="responseMessage"></p>
     </div>
   </div>
   <script src="popup.js"></script>
