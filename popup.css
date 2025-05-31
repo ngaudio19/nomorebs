@@ -1,0 +1,114 @@
+body {
+  font-family: sans-serif;
+  width: 380px; /* Slightly wider for more text */
+  padding: 15px;
+  background-color: #f4f4f4;
+}
+
+.container {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+h1 {
+  font-size: 1.5em;
+  color: #333;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+button {
+  background-color: #0077b5; /* LinkedIn Blue */
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  width: 100%;
+  margin-bottom: 15px;
+}
+
+button:hover {
+  background-color: #005582;
+}
+
+#results h2 {
+  font-size: 1.2em;
+  color: #444;
+  margin-top: 0;
+  margin-bottom: 10px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 5px;
+}
+
+#llmResponseContainer {
+  font-size: 0.95em;
+  line-height: 1.6;
+  max-height: 300px; /* Limit height and make scrollable if content overflows */
+  overflow-y: auto; /* Add scroll for overflow */
+  border: 1px solid #eee; /* Optional: add a border */
+  padding: 10px; /* Optional: add some padding */
+  background-color: #f9f9f9; /* Optional: slight background color */
+  border-radius: 4px; /* Optional: rounded corners */
+}
+
+#llmResponseContainer h3 {
+    font-size: 1.1em;
+    color: #0077b5;
+    margin-top: 15px;
+    margin-bottom: 5px;
+}
+#llmResponseContainer ul {
+    list-style-type: disc;
+    padding-left: 20px;
+    margin-bottom: 10px;
+}
+#llmResponseContainer li {
+    margin-bottom: 5px;
+}
+#llmResponseContainer p {
+    margin-bottom: 10px;
+}
+#llmResponseContainer pre { /* Style for preformatted text if LLM returns simple string */
+    white-space: pre-wrap;
+    word-break: break-word;
+    background-color: #efefef;
+    padding: 10px;
+    border-radius: 4px;
+}
+
+
+#statusMessages p {
+  text-align: center;
+  padding: 8px;
+  border-radius: 4px;
+  margin-bottom: 10px;
+}
+
+#loadingMessage {
+  color: #333;
+  background-color: #e9f5ff;
+  border: 1px solid #b3d7f0;
+}
+
+.error-message {
+  color: #D8000C;
+  background-color: #FFD2D2;
+  border: 1px solid #D8000C;
+}
+
+.config-message {
+  color: #9F6000;
+  background-color: #FEEFB3;
+  border: 1px solid #9F6000;
+}
+.config-message a {
+    color: #005582;
+    font-weight: bold;
+}
