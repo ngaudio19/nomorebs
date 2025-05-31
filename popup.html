@@ -1,38 +1,37 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <meta charset="UTF-8">
   <title>No More Corporate Bullshit</title>
   <link rel="stylesheet" href="popup.css">
 </head>
 <body>
   <div class="container">
-    <h1>✨ No More Corporate Bullshit</h1>
+    <h1>😇 No More Corporate Bullshit</h1>
     <div id="motivationalCopy" class="motivational-copy"></div>
-    <button id="analyzeBtn">Analyze Post</button>
+    <button id="analyzeBtn">Unmask the Shenanigans!</button>
     <div id="statusMessages">
-        <p id="loadingMessage" style="display:none;">Summoning the truth serum...</p>
+        <p id="loadingMessage" style="display:none;">Summoning the truth serum... (this could take a tick)</p>
         <p id="errorMessage" class="error-message" style="display:none;"></p>
         <p id="configMessage" class="config-message" style="display:none;">
-            API Key not configured. Please <a href="#" id="openOptionsLink">go to options</a> to set it up.
+            API Key missing, friend! Please <a href="#" id="openOptionsLink">visit options</a> to set it up.
         </p>
     </div>
     <div id="results" style="display:none;">
-      <h2>Analysis:</h2>
       <div id="llmResponseContainer">
-          <p id="overview"></p>
-          <p id="flagrancy"></p>
-          <div id="fallaciesContainer"></div>
+          <div id="overviewSection" class="analysis-section">
+            </div>
+          <div id="naughtinessSection" class="analysis-section">
+            <h3>Bullshit Naughtiness Score:</h3>
+            <p id="naughtinessRating" class="rating-value"></p>
+            <p id="naughtinessJustification" class="justification-text"></p>
+          </div>
+          <div id="fallaciesSection" class="analysis-section">
+            <h3>Potential Logical Pitfalls:</h3>
+            <div id="fallaciesContainer">
+              </div>
+          </div>
       </div>
-    </div>
-    <div id="interactionArea" style="display: none;">
-        <h3>Get a Response:</h3>
-        <select id="responseType">
-            <option value="kind">😊 Kind Response</option>
-            <option value="standard">🤔 Standard Explanation</option>
-            <option value="smartass">😎 Smart-ass Remark</option>
-        </select>
-        <button id="getResponseBtn" disabled>Get Response</button>
-        <p id="responseMessage"></p>
     </div>
   </div>
   <script src="popup.js"></script>
