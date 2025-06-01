@@ -2,16 +2,16 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>TFDYJS Popup</title>
+  <title>TFYJS Popup</title>
   <link rel="stylesheet" href="popup.css">
 </head>
 <body>
   <div class="container">
     <div class="header">
-      <img src="images/icon48.png" alt="TFDYJS Logo" id="popupLogo" />
-      <h1>TFDYJS</h1>
+      <img src="images/icon48.png" alt="TFYJS Logo" id="popupLogo" />
+      <h1>TFYJS</h1>
     </div>
-    <p id="instructionText" class="instruction">To analyze, select text on any page, then right-click and choose 'TFDYJS: Analyze selection'.</p>
+    <p id="instructionText" class="instruction">To analyze, select text on any page, then right-click and choose 'TF You Just Say?'.</p>
     <button id="analyzeBtn">Analyze Full Page (Beta)</button>
     <div id="statusMessages">
         <p id="loadingMessage" style="display:none;">💥 Truth serum activated!</p>
@@ -32,13 +32,16 @@
           </div>
 
           <div id="deceptionProbabilitySection" class="analysis-section">
-            <h3 id="naughtinessTitle">Deception Probability Meter:</h3> {/* Title might change via JS */}
+            <h3>Deception Probability Meter:</h3>
             <p id="probabilityScore" class="rating-value"></p>
-            <p id="probabilityConfidence" class="justification-text"></p>
+            <div id="slippyConfidence" class="justification-text">
+                <span>Slippy's Confidence: </span>
+                <span id="confidenceEggs"></span>
+            </div>
           </div>
 
           <div id="keyPointsSection" class="analysis-section">
-            <h3 id="tacticsTitle">Slippy's Key Observations:</h3> {/* Title might change via JS */}
+            <h3 id="tacticsTitle">Slippy's Key Observations:</h3> {/* Removed stray comment */}
             <ul id="keyPointsList">
               {/* Key Points for User will be list items here */}
             </ul>
