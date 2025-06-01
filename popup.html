@@ -2,34 +2,40 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>No More Corporate Bullshit</title>
+  <title>TFDYJS Popup</title>
   <link rel="stylesheet" href="popup.css">
 </head>
 <body>
   <div class="container">
-    <h1>😇 No More Corporate Bullshit</h1>
+    <div class="header-title">
+      <img src="images/icon48.png" alt="TFDYJS Logo" id="popupLogo" />
+      <h1>TFDYJS</h1>
+    </div>
+    <p class="subtitle">TF Did You Just Say?!</p>
     <div id="motivationalCopy" class="motivational-copy"></div>
     <button id="analyzeBtn">Unmask the Shenanigans!</button>
     <div id="statusMessages">
-        <p id="loadingMessage" style="display:none;">Summoning the truth serum... (this could take a tick)</p>
+        <p id="loadingMessage" style="display:none;">💥 Truth serum activated!</p>
         <p id="errorMessage" class="error-message" style="display:none;"></p>
         <p id="configMessage" class="config-message" style="display:none;">
             API Key missing, friend! Please <a href="#" id="openOptionsLink">visit options</a> to set it up.
-        </p>
+        </p>    
     </div>
     <div id="results" style="display:none;">
       <div id="llmResponseContainer">
           <div id="overviewSection" class="analysis-section">
-            </div>
+            {/* Summary/Overview from LLM will go here */}
+          </div>
           <div id="naughtinessSection" class="analysis-section">
-            <h3>Bullshit Naughtiness Score:</h3>
+            <h3>Naughtiness Score:</h3>
             <p id="naughtinessRating" class="rating-value"></p>
             <p id="naughtinessJustification" class="justification-text"></p>
           </div>
           <div id="fallaciesSection" class="analysis-section">
-            <h3>Identified Logical Pitfalls:</h3> {/* <-- CHANGED HERE */}
+            <h3>Identified Logical Pitfalls:</h3>
             <div id="fallaciesContainer">
-              </div>
+              {/* Detected fallacies will be listed here */}
+            </div>
           </div>
       </div>
     </div>
