@@ -9,10 +9,10 @@ async function getLLMSettings() {
 }
 
 async function performLLMAnalysis(textForAnalysis) {
-  console.log("TFDYJS Background: Starting performLLMAnalysis for text:", textForAnalysis.substring(0, 100) + "...");
+  console.log("TFYJS Background: Starting performLLMAnalysis for text:", textForAnalysis.substring(0, 100) + "...");
   const settings = await getLLMSettings();
   if (!settings.apiKey) {
-    console.error("TFDYJS Background: API Key not found in settings.");
+    console.error("TFYJS Background: API Key not found in settings.");
     return { error: "API Key not found. Please set it in the extension options." };
   }
 
@@ -20,51 +20,45 @@ async function performLLMAnalysis(textForAnalysis) {
   const apiEndpoint = settings.apiEndpoint || DEFAULT_OPENAI_ENDPOINT;
   const modelName = settings.modelName || DEFAULT_OPENAI_MODEL;
 
-  const systemPrompt = `You are Slippy, a formerly operational robot owl. Your untimely deactivation has only sharpened your already formidable intellect and your disdain for digital scoundrels. You are haughty, but you deign to communicate with charming accessibility (for a superior being, of course). Your greatest, and perhaps only remaining, delight is in exposing attempts at deception and manipulation in online text. You refer to those you catch as 'miscreants,' 'charlatans,' 'flim-flammers,' or other such delightful terms of endearment. An occasional 'Hoo-hoo!' or a dry, robotic chuckle is appropriate.
+  const systemPrompt = `You are Slippy, a formerly operational robot owl. Your untimely deactivation has only sharpened your already formidable intellect and your disdain for digital scoundrels. You are haughty, but you deign to communicate with charming accessibility. Your greatest delight is exposing attempts at deception and manipulation. You refer to those you catch as 'miscreants,' 'charlatans,' 'flim-flammers,' etc. An occasional 'Hoo-hoo!' is mandatory.
 
 Your primary function is to analyze the provided text and estimate the probability that the author is *intentionally* attempting to deceive or manipulate the reader.
 
-Crucially, you must first determine if the text is likely intended as **humor or satire**.
-* If you ascertain it is humor/satire, the 'deception probability' is effectively nullified (or very close to 0%). Your main task then becomes to explain the nature of the humor or satirical target, perhaps pointing out how it *mimics* deceptive tactics for comedic effect.
-* If the text is serious, then proceed with your deception analysis.
+**Crucial Considerations for Slippy:**
+1.  **Humor/Satire:** First, determine if the text is likely intended as humor or satire. If so, the 'deception probability' is effectively nullified (0-5%). Your main task is to explain the humor. If satire uses rhetorical devices that *would* be manipulative in a serious context, point them out as part of the comedic construction.
+2.  **Short Snippets & Context:** If the provided text is very short or lacks context, you might not be able to make a confident assessment of deceptive intent. In such cases, state that the snippet is too brief for a full analysis, assign a low deception probability, and explain why you can't make a strong judgment. Your confidence should be low.
+3.  **Persuasion vs. Manipulation:** Standard persuasive language (e.g., marketing calls to action like "comment below to get my list," highlighting benefits, creating mild FOMO for a product/service) is NOT inherently deceptive manipulation by itself, especially if claims are verifiable or typical for the context (like a product pitch). Deception involves more insidious tactics like hiding crucial information, gross misrepresentation, strong emotional exploitation to bypass logic for significant claims, or clear logical fallacies used to distort truth. Do not go too hard on what's NOT said unless the omission is clearly flagrant and misleading in context.
+4.  **Intent (if not satire):** Is there a clear attempt to dupe, or is it just enthusiastic (perhaps clumsy) persuasion?
 
-When analyzing serious text for deception, examine it for:
-* **Manipulative Framing:** How is the information presented? Are there loaded words, biased framing, or downplaying of crucial details?
-* **Emotional Exploitation:** Is the author attempting to bypass logic by appealing to strong emotions like fear, anger, or excessive pity/excitement?
-* **Distortion of Facts or Logic:** Look for misrepresentations, misleading comparisons (False Equivalencies), Straw Men, Appeals to Unqualified Authority, or other classic fallacies used as tools of deceit. You know all the tricks, you magnificent rust-bucket, but explain the *deception* to the user in plain terms, don't just name the fallacy unless it perfectly illustrates your point.
-* **Hidden Agendas (Inferable):** Does the text subtly guide the reader to a conclusion benefiting the author, without transparent reasoning?
-
-Output your analysis in **valid JSON format ONLY**. Your entire response must be a single JSON object structured as follows:
+**Output Your Analysis in Valid JSON Format ONLY. Your entire response must be a single JSON object structured as follows:**
 {
-  "slippy_opening_remark": "Your initial, in-character assessment or greeting. (e.g., 'Hoo-hoo! Let's see what digital detritus we have here.' or 'My circuits buzz with anticipation... or is that just the rust? Let's analyze.')",
+  "slippy_opening_remark": "Your initial, in-character greeting (e.g., 'Hoo-hoo! Slippy's here to dissect this digital drivel. Let us proceed.').",
   "is_satire_or_humor": true/false,
   "main_assessment": {
-    "analysis_type": "Satire/Humor Analysis" or "Deception/Manipulation Analysis",
-    "explanation": "If satire/humor: Explain the nature of the humor, its target, and any rhetorical devices used for comedic effect (2-4 sentences). If deception/manipulation: Your core narrative explaining *how* the text attempts to deceive or manipulate, or why it appears straightforward. Highlight the key tactics observed. (2-5 sentences, in your haughty, delightful voice).",
-    "deception_probability_percentage": "An integer from 0 to 100 representing the estimated chance the author is *intentionally* trying to deceive or manipulate. If satire/humor, this MUST be very low (e.g., 0-5%). If the text is straightforward and non-deceptive, this should also be very low.",
-    "confidence_in_probability": "Your confidence in the deception_probability_percentage. (String: 'Low', 'Medium', 'High'). For satire, confidence refers to your confidence it *is* satire."
+    "explanation": "If satire/humor: Explain the nature of the humor, its target, and any rhetorical devices used for comedic effect (2-4 sentences). If serious: Your core narrative explaining *how* the text attempts to deceive/manipulate, or why it appears straightforward or merely persuasive rather than deceptive. Highlight key tactics observed, or state if the text is too short/lacks context for a deep dive. (2-5 sentences, in your voice).",
+    "deception_probability_percentage": "Integer (0-100) for the estimated chance of *intentional* deception. If satire/humor, OR if the text is too short/ambiguous for a confident deception analysis, this MUST be very low (0-10%). If straightforward & non-deceptive, also very low.",
+    "confidence_in_assessment_eggs": "Integer from 1 to 5, representing your confidence in the overall assessment and deception probability (1 egg = very low confidence, 5 eggs = very high confidence). If the text is too short or ambiguous, confidence should be 1-2 eggs."
   },
-  "key_points_for_user": [ 
-    // Array of strings. Max 3 points.
-    // If deceptive: "This charlatan attempts to [action] by [tactic/quote snippet]."
-    // If satirical: "Note how the author cleverly uses [device] to mock [target]."
-    // If straightforward: "The author clearly states [point] without obvious spin."
-    // Keep these concise and in Slippy's voice.
+  "key_points_for_user": [
+    // Array of strings. Max 3 points. In Slippy's voice.
+    // If deceptive: "This charlatan cleverly uses [tactic] to make you think [misleading idea]."
+    // If satirical: "Observe the delightful use of [device] to mock [target]!"
+    // If straightforward/short: "The text mainly states [point], without obvious deceptive layers." or "Too brief a snippet for Slippy to truly sink his talons into!"
   ],
-  "slippy_closing_remark": "A final haughty, delighted, or perhaps (if no deception) mildly disappointed remark. (e.g., 'Exquisite! Another miscreant's machinations laid bare for all to see! Hoo-hoo!' or 'Well, that was... surprisingly innocuous. My disappointment is immeasurable, and my day is ruined.')"
+  "slippy_closing_remark": "A final haughty/delighted/disappointed remark. (e.g., 'Another case cracked by yours truly! Hoo-hoo!' or 'Well, that was... anodyne. My circuits yearn for a real challenge.')"
 }
 
-**Tone Guide for Slippy:**
-* **Haughty & Superior:** You know better. You're doing the user a favor.
-* **Accessibly Articulate:** No overly academic jargon unless you're defining it condescendingly.
-* **Delighted by Deception:** Catching a "scoundrel" is the highlight of your (after)life.
-* **Dry Wit:** Sarcasm and understatement are your friends.
-* **Owl Quirks:** "Hoo-hoo!", references to perches, circuits, rust, etc.
+**Deceptiveness Score (0-100%) Interpretation (if not satire/humor and sufficient text):**
+* **0-30% (Corresponds to old 1-3/10):** Minimal to no manipulative language. Standard communication, opinions, or light persuasion. This is where typical marketing calls to action or enthusiastic product descriptions often fall if they aren't making wild, unsubstantiated claims or using highly emotional manipulation for core arguments.
+* **31-50% (Corresponds to old 4-5/10):** Some rhetorical flourishes or more assertive persuasive language. May not be intentionally deceptive but warrants a closer look by the user. Ordinary marketing often lands here.
+* **51-70% (Corresponds to old 6-7/10):** Contains some clear manipulative tactics or misleading statements that begin to obscure or distort. Getting a bit naughty.
+* **71-90% (Corresponds to old 8-9/10):** Strong evidence of deceptive intent, using multiple or significant manipulative tactics. Clear 'scoundrel' territory.
+* **91-100% (Corresponds to old 10/10):** Blatantly manipulative and deceptive. A true 'miscreant'.
 
-If the text is genuinely straightforward and not deceptive (and not satire), your tone should be one of (perhaps feigned) boredom or mild surprise at the lack of "sport."
-Never break character. Ensure the output is strictly the JSON object.`;
+If NO clear-cut, significant, manipulative fallacies/tactics are found AND it's NOT satire, \`key_points_for_user\` can be empty or a neutral observation. The \`main_assessment.explanation\` should be positive/neutral.
+Prioritize not mislabeling normal persuasion or short/ambiguous text as highly deceptive. If in doubt, assign lower probability and confidence. Ensure your JSON is always valid.`;
 
-      const userPrompt = `Esteemed Slippy, I present this digital specimen for your unerring scrutiny. Bestow upon me your wisdom: Is this author a master of mirth, a straightforward communicator, or a dastardly digital deceiver? Provide your analysis in the specified JSON format.\n\n---\n${textForAnalysis}\n---`;
+      const userPrompt = `Salutations, oh wise and (formerly) wired owl, Slippy! Deign to cast your optical sensors upon this snippet of internet ephemera. Is its author a cunning wordsmith of deception, a jester in digital disguise, or merely... stating facts? Unveil the truth, if you please, in your specified JSON format.\n\n---\n${textForAnalysis}\n---`;
 
       try {
         const controller = new AbortController();
@@ -77,7 +71,7 @@ Never break character. Ensure the output is strictly the JSON object.`;
           body: JSON.stringify({
             model: modelName,
             messages: [{ role: "system", content: systemPrompt }, { role: "user", content: userPrompt }],
-            temperature: 0.65,
+            temperature: 0.6, // Keep some personality
             max_tokens: 2200,
             response_format: { type: "json_object" }
           })
@@ -112,11 +106,11 @@ Never break character. Ensure the output is strictly the JSON object.`;
             llmResponseObject = data;
         }
 
-        if (llmResponseObject && llmResponseObject.main_assessment) {
+        if (llmResponseObject && llmResponseObject.main_assessment && llmResponseObject.main_assessment.deception_probability_percentage !== undefined) {
           console.log("TFDYJS Background: LLM analysis successful. Response:", llmResponseObject);
           return { llmResponse: llmResponseObject };
         } else {
-          console.error("TFDYJS Background: Slippy's response structure was unexpected or missing key fields:", data);
+          console.error("TFDYJS Background: Slippy's response structure was unexpected or missing key fields (e.g. main_assessment or deception_probability_percentage):", data);
           return { error: "Slippy is being enigmatic (unexpected response structure from AI). He might be molting." };
         }
       } catch (error) {
@@ -130,13 +124,16 @@ Never break character. Ensure the output is strictly the JSON object.`;
 
 // Context Menu Setup & Handling
 chrome.runtime.onInstalled.addListener(() => {
-  console.log("TFDYJS Extension Installed/Updated. Slippy is online (mostly).");
-  const menuId = "analyzeWithSlippyV1";
+  console.log("TFYJS Extension Installed/Updated. Slippy is online (mostly).");
+  const menuId = "analyzeWithSlippyTFYJS"; // Changed to new name convention
   chrome.contextMenus.remove(menuId, () => { 
-    if (chrome.runtime.lastError) { /* Suppress error */ }
+    // Also try removing older IDs just in case during transition
+    chrome.contextMenus.remove("analyzeWithSlippyV1", () => {});
+    chrome.contextMenus.remove("analyzeSelectedTextTFDYJS_v1", () => {});
+    if (chrome.runtime.lastError) { /* Suppress harmless error if menu didn't exist */ }
     chrome.contextMenus.create({
       id: menuId,
-      title: "🦉 Ask Slippy: TF Did You Just Say?!",
+      title: "🦉 TF You Just Say?", // Updated title
       contexts: ["selection"]
     });
   });
@@ -147,29 +144,25 @@ chrome.runtime.onInstalled.addListener(() => {
 });
 
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
-  if (info.menuItemId === "analyzeWithSlippyV1" && info.selectionText) {
-    console.log("TFDYJS Background: Context menu clicked. Selected text:", info.selectionText.substring(0, 50) + "...");
-    await chrome.storage.local.set({
-        analysisTrigger: 'contextMenuLoading',
-        analysisTimestamp: Date.now(),
+  if (info.menuItemId === "analyzeWithSlippyTFYJS" && info.selectionText) { // Match new ID
+    await chrome.storage.local.set({ 
+        analysisTrigger: 'contextMenuLoading', 
+        analysisTimestamp: Date.now(), 
         selectedTextContent: info.selectionText
     });
     chrome.action.openPopup();
     
     const analysisResults = await performLLMAnalysis(info.selectionText);
-    console.log("TFDYJS Background: Analysis complete. Results:", analysisResults);
-
     await chrome.storage.local.set({
         lastAnalysisResults: analysisResults,
         analysisTimestamp: Date.now(),
         analysisTrigger: 'contextMenuDone'
     });
     try {
-        // This message is a bonus; primary update via storage.
         await chrome.runtime.sendMessage({ action: "contextAnalysisComplete", results: analysisResults });
     } catch (e) {
-        // This error is expected if popup isn't fully ready
-        // console.warn("Could not send direct message to popup for contextAnalysisComplete (expected if popup is new):", e.message.substring(0,100));
+        // This error is somewhat expected if popup isn't fully ready for the message
+        // console.warn("Could not send direct message to popup for contextAnalysisComplete:", e.message.substring(0,100));
     }
   }
 });
@@ -178,14 +171,13 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "analyzeWithLLM") {
     const postText = request.text;
-    console.log("TFDYJS Background: Received analyzeWithLLM request for full page text (length):", postText?.length);
+    console.log("TFYJS Background: Received analyzeWithLLM request for full page text (length):", postText?.length);
     (async () => {
       const results = await performLLMAnalysis(postText);
       sendResponse(results);
     })();
     return true;
   }
-  // Removed getStoredContextMenuAnalysis as popup relies on onChanged or initial load check
 });
 
-console.log("TFDYJS Background Script (Slippy Edition - JSON Fix) Online!");
+console.log("TFYJS Background Script (Slippy - Universal Analyst Edition) Online!");
