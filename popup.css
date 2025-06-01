@@ -258,11 +258,24 @@ button#analyzeBtn:active:not(:disabled) {
 
 #coffeeLink {
   text-decoration: none;
-  font-size: 20px;
   opacity: 0.6;
   transition: opacity 0.2s ease;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
 }
 
 #coffeeLink:hover {
   opacity: 1;
+}
+
+.coffee-emoji {
+  font-size: 20px;
+}
+
+.coffee-text {
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-weight: 500;
 }
