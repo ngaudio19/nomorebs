@@ -248,3 +248,21 @@ button#analyzeBtn:active:not(:disabled) {
 #keyPointsList li em {
     font-style: italic;
 }
+
+.footer-link {
+  text-align: center;
+  margin-top: 15px;
+  padding-top: 10px;
+  border-top: 1px solid var(--section-border-color);
+}
+
+#coffeeLink {
+  text-decoration: none;
+  font-size: 20px;
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+}
+
+#coffeeLink:hover {
+  opacity: 1;
+}
