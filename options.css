@@ -1,43 +1,84 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  --primary-orange: #fd6714;
+  --main-bg: #FFFFFF; /* White background */
+  --card-bg: #f0f0f0; /* Light grey for the settings card itself */
+  --text-primary: #111111; /* Almost black */
+  --text-secondary: #555555; /* Dark grey */
+  --border-color: #000000; /* Black borders for container */
+  --input-bg: #FFFFFF;
+  --input-border: #CCCCCC;
+  --input-focus-border: var(--primary-orange);
+  --button-text-color: #FFFFFF;
+}
+
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--main-bg); /* White page background */
+  color: var(--text-primary);
+  margin: 0;
+  padding: 30px 20px; /* Add some padding to body */
   display: flex;
   justify-content: center;
-  align-items: flex-start; /* Align to top for longer content */
-  min-height: 90vh;
-  background-color: #f0f2f5;
-  margin: 0;
-  padding: 20px;
+  align-items: flex-start;
+  min-height: 100vh;
   box-sizing: border-box;
 }
 
 .container {
-  background-color: #fff;
-  padding: 25px 35px;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  background-color: var(--card-bg);
+  padding: 30px 35px;
+  border-radius: 10px; /* More rounded */
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1); /* Softer shadow */
   width: 100%;
-  max-width: 600px; /* Increased max-width */
+  max-width: 650px; /* Slightly wider */
+  border: 1px solid #DCDCDC; /* Lighter border for the card */
   box-sizing: border-box;
 }
 
-h1 {
-  font-size: 1.8em;
-  color: #1c1e21; /* Darker heading */
+.header-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px; /* Space between logo and title */
+  margin-bottom: 5px;
+}
+
+#optionsLogo {
+    width: 40px;
+    height: 40px;
+}
+
+h1 { /* For TFDYJS main title */
+  color: var(--border-color); /* Black */
   text-align: center;
   margin-top: 0;
-  margin-bottom: 20px;
+  margin-bottom: 0; /* Reduce space after title */
+  font-size: 2.2em; /* Match popup */
+  font-weight: 700;
+}
+.options-subtitle { /* For "Settings & API Key" */
+  text-align: center;
+  color: var(--text-primary);
+  font-weight: 600;
+  margin-top: 5px; /* Space after main title */
+  margin-bottom: 25px;
+  font-size: 1.2em;
 }
 
-p {
-    font-size: 0.95em;
+
+p.info-text {
+    font-size: 0.9em;
     line-height: 1.6;
-    color: #333;
+    color: var(--text-secondary);
     margin-bottom: 15px;
+    text-align: left;
 }
-p strong {
-    color: #c00;
+p.info-text strong {
+    color: var(--text-primary);
+    font-weight: 600;
 }
-
 
 .form-group {
   margin-bottom: 22px;
@@ -45,42 +86,43 @@ p strong {
 
 label {
   display: block;
-  font-weight: 600; /* Slightly bolder */
+  font-weight: 600;
   margin-bottom: 8px;
-  color: #333;
-  font-size: 0.9em;
+  color: var(--text-primary);
+  font-size: 0.95em; /* Slightly larger labels */
 }
 
 input[type="text"],
 input[type="password"] {
   width: 100%;
-  padding: 12px; /* Increased padding */
-  border: 1px solid #ccc;
-  border-radius: 6px; /* Slightly more rounded */
+  padding: 12px;
+  border: 1px solid var(--input-border);
+  border-radius: 6px;
   box-sizing: border-box;
   font-size: 1em;
+  background-color: var(--input-bg);
+  color: var(--text-primary);
   transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
 }
 
 input[type="text"]:focus,
 input[type="password"]:focus {
-    border-color: #0077b5;
-    box-shadow: 0 0 0 2px rgba(0, 119, 181, 0.2);
+    border-color: var(--input-focus-border);
+    box-shadow: 0 0 0 3px rgba(253, 103, 20, 0.2); /* Orange glow */
     outline: none;
 }
 
-
 small {
     display: block;
-    font-size: 0.8em;
-    color: #555; /* Darker small text */
+    font-size: 0.85em; /* Slightly larger small text */
+    color: var(--text-secondary);
     margin-top: 6px;
     line-height: 1.4;
 }
 
-button {
-  background-color: #0077b5;
-  color: white;
+button#saveBtn {
+  background-color: var(--primary-orange);
+  color: var(--button-text-color);
   border: none;
   padding: 12px 20px;
   text-align: center;
@@ -90,18 +132,24 @@ button {
   cursor: pointer;
   width: 100%;
   transition: background-color 0.2s ease;
-  margin-top: 10px; /* Added margin-top */
+  margin-top: 15px; /* Space above button */
 }
 
-button:hover {
-  background-color: #005f94; /* Darker hover */
+button#saveBtn:hover {
+  background-color: #ff8533; /* Lighter orange */
 }
 
 .status-message {
-  margin-top: 20px; /* Increased margin */
+  margin-top: 20px;
   text-align: center;
-  font-weight: bold;
+  font-weight: 600;
   padding: 10px;
-  border-radius: 4px;
+  border-radius: 6px;
   font-size: 0.95em;
+  border-width: 1px;
+  border-style: solid;
+  /* Default to neutral, JS will change colors */
+  background-color: var(--card-bg); /* Match card background */
+  border-color: var(--section-border-color); /* Use section border color */
+  color: var(--text-primary);
 }
