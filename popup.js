@@ -12,7 +12,8 @@ document.addEventListener('DOMContentLoaded', async function() {
   const assessmentExplanationDiv = document.getElementById('assessmentExplanation');
   const deceptionProbabilitySection = document.getElementById('deceptionProbabilitySection');
   const probabilityScoreP = document.getElementById('probabilityScore');
-  const probabilityConfidenceP = document.getElementById('probabilityConfidence');
+  const slippyConfidenceDiv = document.getElementById('slippyConfidence'); // Parent div
+  const confidenceEggsSpan = document.getElementById('confidenceEggs');    // Span for eggs
   const keyPointsSection = document.getElementById('keyPointsSection');
   const tacticsTitleH3 = document.getElementById('tacticsTitle');
   const keyPointsListUl = document.getElementById('keyPointsList');
@@ -23,18 +24,17 @@ document.addEventListener('DOMContentLoaded', async function() {
 
   async function updateButtonAndInstruction() {
     try {
-      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-      const currentUrl = tab && tab.url ? tab.url : "";
-      // The "Analyze Full Page (Beta)" button is now always enabled,
-      // instruction focuses on context menu.
-      instructionTextP.textContent = "To analyze, select text on any page, then right-click and choose 'TFDYJS: Analyze selection'.";
-      analyzeBtn.disabled = false; 
+      // Instruction text is now static in HTML for primary context menu guidance.
+      // Button is for "Analyze Full Page (Beta)" and always enabled.
+      instructionTextP.textContent = "To analyze, select text on any page, then right-click and choose 'TF You Just Say?'.";
+      analyzeBtn.textContent = "Analyze Full Page (Beta)";
+      analyzeBtn.disabled = false;
       analyzeBtn.title = "Attempts to analyze the main content of this page (Beta). For specific text, please highlight and right-click.";
-
     } catch (e) {
-      console.error("Error querying tabs for URL:", e);
+      console.error("Error setting up initial button/instruction state:", e);
       instructionTextP.textContent = "Select text & right-click to analyze.";
-      analyzeBtn.disabled = true; 
+      analyzeBtn.textContent = "Analyze Full Page (Beta)";
+      analyzeBtn.disabled = false; 
     }
   }
   updateButtonAndInstruction();
@@ -65,12 +65,11 @@ document.addEventListener('DOMContentLoaded', async function() {
     loadingMessage.style.display = 'none';
     const originalText = analyzeBtn.getAttribute('data-original-text') || "Analyze Full Page (Beta)";
     analyzeBtn.textContent = originalText;
-    updateButtonAndInstruction(); // Re-evaluates if button should be disabled (e.g. if we bring back LinkedIn specific logic)
-                                  // For now, it will mostly just re-enable it.
+    analyzeBtn.disabled = false; // "Analyze Full Page" button is generally always enabled
   }
 
   function renderResults(analysisData, wasFromContextMenu = false) {
-    console.log("TFDYJS Popup: Attempting to render results:", analysisData);
+    console.log("TFYJS Popup: Attempting to render results:", analysisData);
     hideLoadingStateRestoreButton();
     resultsDiv.style.display = 'block';
 
@@ -81,27 +80,27 @@ document.addEventListener('DOMContentLoaded', async function() {
     } else {
       displayError("Slippy's analysis seems to be missing or in an unexpected format.");
     }
-    if (wasFromContextMenu) { // Only clear storage if it was a context menu flow that set these specific triggers
+    if (wasFromContextMenu) {
         chrome.storage.local.remove(['analysisTrigger', 'lastAnalysisResults', 'analysisTimestamp', 'selectedTextContent']);
     }
   }
 
   async function checkForContextMenuAnalysisOnLoad() {
-    console.log("TFDYJS Popup: Checking for context menu analysis on load...");
+    console.log("TFYJS Popup: Checking for context menu analysis on load...");
     try {
       const data = await chrome.storage.local.get(['analysisTrigger', 'lastAnalysisResults', 'analysisTimestamp', 'selectedTextContent']);
       const oneMinute = 1 * 60 * 1000;
 
       if (data.analysisTimestamp && (Date.now() - data.analysisTimestamp < oneMinute)) {
         if (data.analysisTrigger === 'contextMenuLoading') {
-          console.log("TFDYJS Popup: Found 'contextMenuLoading' trigger in storage.");
+          console.log("TFYJS Popup: Found 'contextMenuLoading' trigger in storage.");
           showLoadingState(`💥 Analyzing selected text: "${(data.selectedTextContent || "selection").substring(0, 30)}..."`);
         } else if (data.analysisTrigger === 'contextMenuDone' && data.lastAnalysisResults) {
           console.log("TFDYJS Popup: Found 'contextMenuDone' and results in storage on load.");
-          renderResults(data.lastAnalysisResults, true); // True because this is context menu flow
+          renderResults(data.lastAnalysisResults, true);
         }
       } else {
-        if (data.analysisTrigger || data.lastAnalysisResults) { // If any old trigger/results exist
+        if (data.analysisTrigger || data.lastAnalysisResults) {
             console.log("TFDYJS Popup: Clearing stale context menu analysis data from storage.");
             await chrome.storage.local.remove(['analysisTrigger', 'lastAnalysisResults', 'analysisTimestamp', 'selectedTextContent']);
         }
@@ -113,13 +112,13 @@ document.addEventListener('DOMContentLoaded', async function() {
 
   chrome.storage.onChanged.addListener(async (changes, areaName) => {
     if (areaName === 'local' && changes.analysisTrigger) {
-      console.log("TFDYJS Popup: Storage change detected for analysisTrigger:", changes.analysisTrigger.newValue);
+      console.log("TFYJS Popup: Storage change detected for analysisTrigger:", changes.analysisTrigger.newValue);
       if (changes.analysisTrigger.newValue === 'contextMenuDone') {
         const data = await chrome.storage.local.get(['lastAnalysisResults', 'analysisTimestamp']);
         const oneMinute = 1 * 60 * 1000;
         if (data.lastAnalysisResults && data.analysisTimestamp && (Date.now() - data.analysisTimestamp < oneMinute)) {
-            console.log("TFDYJS Popup: Rendering results from storage change (contextMenuDone).");
-            renderResults(data.lastAnalysisResults, true); // True because this is context menu flow
+            console.log("TFYJS Popup: Rendering results from storage change (contextMenuDone).");
+            renderResults(data.lastAnalysisResults, true);
         } else {
             console.warn("TFDYJS Popup: 'contextMenuDone' trigger but results are stale or missing from storage.");
         }
@@ -131,11 +130,11 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
   });
   
-  // This direct message listener is a fallback; storage.onChanged is primary for context menu
+  // This direct message listener is a fallback but storage.onChanged is primary.
   chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === "contextAnalysisComplete" && request.results) {
-      console.log("TFDYJS Popup: Received contextAnalysisComplete direct message (less common).");
-      renderResults(request.results, true); // True because this is context menu flow
+      console.log("TFYJS Popup: Received contextAnalysisComplete direct message (less common).");
+      renderResults(request.results, true);
       return true; 
     }
   });
@@ -171,7 +170,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         } else if (pageContentResponse && pageContentResponse.error) {
           displayError(pageContentResponse.error);
         } else {
-          displayError("Could not extract main content. Try selecting text and right-clicking.");
+          displayError("Could not extract main content from this page. Try selecting text and right-clicking.");
         }
       } else {
         displayError("Cannot analyze this page (e.g., internal Chrome page or no active tab).");
@@ -184,7 +183,7 @@ document.addEventListener('DOMContentLoaded', async function() {
   });
 
   function displayError(message) {
-    console.error("TFDYJS Popup: Displaying error -", message);
+    console.error("TFYJS Popup: Displaying error -", message);
     errorMessage.textContent = message;
     errorMessage.style.display = 'block';
     resultsDiv.style.display = 'none';
@@ -192,19 +191,20 @@ document.addEventListener('DOMContentLoaded', async function() {
   }
 
   function displaySlippyAnalysis(llmResponse) {
-    console.log("TFDYJS Popup: Displaying Slippy's analysis:", llmResponse);
+    console.log("TFYJS Popup: Displaying Slippy's analysis:", llmResponse);
 
     if (slippyOpeningDiv) slippyOpeningDiv.innerHTML = '';
     if (assessmentExplanationDiv) assessmentExplanationDiv.innerHTML = '';
     if (probabilityScoreP) probabilityScoreP.textContent = '';
-    if (probabilityConfidenceP) probabilityConfidenceP.textContent = '';
+    if (confidenceEggsSpan) confidenceEggsSpan.innerHTML = ''; // Changed from probabilityConfidenceP
     if (keyPointsListUl) keyPointsListUl.innerHTML = '';
     if (slippyClosingDiv) slippyClosingDiv.innerHTML = '';
 
     if (mainAssessmentSection) mainAssessmentSection.style.display = 'block';
     if (deceptionProbabilitySection) deceptionProbabilitySection.style.display = 'block';
     if (keyPointsSection) keyPointsSection.style.display = 'block';
-    // if (tacticsTitleH3) tacticsTitleH3.textContent = "Slippy's Key Observations:"; // Reset in case of satire
+    if (tacticsTitleH3) tacticsTitleH3.textContent = "Slippy's Key Observations:";
+
 
     if (slippyOpeningDiv && llmResponse.slippy_opening_remark) {
       slippyOpeningDiv.textContent = llmResponse.slippy_opening_remark;
@@ -216,7 +216,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     if (assessmentExplanationDiv) {
         let explanationHtml = "";
         if (llmResponse.is_satire_or_humor && llmResponse.satire_explanation) {
-            explanationHtml += `<p><strong>Slippy's Comedy Radar Activated!</strong><br>${llmResponse.satire_explanation.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>')}</p>`;
+            explanationHtml += `<p style="font-weight: bold; color: var(--primary-orange);">Slippy's Comedy Radar Activated!</p><p>${llmResponse.satire_explanation.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>')}</p><hr style="border-color: var(--section-border-color); margin: 10px 0;">`;
         }
         explanationHtml += llmResponse.main_assessment?.explanation || "Slippy seems to be lost in thought... no detailed explanation found.";
         explanationHtml = explanationHtml.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>');
@@ -224,17 +224,23 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
     
     if (deceptionProbabilitySection) {
-        if (llmResponse.is_satire_or_humor) {
+        if (llmResponse.is_satire_or_humor || llmResponse.main_assessment?.deception_probability_percentage === undefined) {
             deceptionProbabilitySection.style.display = 'none';
         } else {
             deceptionProbabilitySection.style.display = 'block';
             if (probabilityScoreP) {
-                probabilityScoreP.textContent = llmResponse.main_assessment?.deception_probability_percentage !== undefined ?
-                  `${llmResponse.main_assessment.deception_probability_percentage}%` : "Not Rated";
+                probabilityScoreP.textContent = `${llmResponse.main_assessment.deception_probability_percentage}%`;
             }
-            if (probabilityConfidenceP) {
-                probabilityConfidenceP.textContent = llmResponse.main_assessment?.confidence_in_probability ?
-                  `(Slippy's Confidence: ${llmResponse.main_assessment.confidence_in_probability})` : "";
+            if (confidenceEggsSpan && llmResponse.main_assessment?.confidence_in_assessment_eggs !== undefined) {
+                const eggCount = parseInt(llmResponse.main_assessment.confidence_in_assessment_eggs);
+                if (eggCount >= 1 && eggCount <= 5) {
+                    confidenceEggsSpan.innerHTML = '🥚'.repeat(eggCount);
+                } else {
+                    confidenceEggsSpan.innerHTML = 'N/A'; // Fallback if egg count is weird
+                }
+                slippyConfidenceDiv.style.display = 'block';
+            } else if (slippyConfidenceDiv) {
+                 slippyConfidenceDiv.style.display = 'none';
             }
         }
     }
@@ -249,21 +255,20 @@ document.addEventListener('DOMContentLoaded', async function() {
                 keyPointsListUl.appendChild(li);
             });
             keyPointsSection.style.display = 'block';
-            if (tacticsTitleH3) { // Ensure tacticsTitleH3 is defined
+            if (tacticsTitleH3) {
                 tacticsTitleH3.textContent = llmResponse.is_satire_or_humor ? "Slippy's Satirical Snippets:" : "Slippy's Key Observations:";
             }
         } else {
             keyPointsListUl.innerHTML = '';
             const noPointsP = document.createElement('p');
             if (llmResponse.is_satire_or_humor) {
-                noPointsP.textContent = "Slippy observes the general comedic style here.";
+                noPointsP.textContent = "Slippy notes the general comedic style here, no specific tropes highlighted from the list.";
             } else {
                 noPointsP.textContent = "Slippy didn't have specific key points to hoot about for this one.";
             }
             keyPointsListUl.appendChild(noPointsP);
         }
     }
-
 
     if (slippyClosingDiv && llmResponse.slippy_closing_remark) {
       slippyClosingDiv.textContent = llmResponse.slippy_closing_remark;
