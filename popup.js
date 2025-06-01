@@ -12,8 +12,8 @@ document.addEventListener('DOMContentLoaded', async function() {
   const assessmentExplanationDiv = document.getElementById('assessmentExplanation');
   const deceptionProbabilitySection = document.getElementById('deceptionProbabilitySection');
   const probabilityScoreP = document.getElementById('probabilityScore');
-  const slippyConfidenceDiv = document.getElementById('slippyConfidence'); // Parent div
-  const confidenceEggsSpan = document.getElementById('confidenceEggs');    // Span for eggs
+  const slippyConfidenceDiv = document.getElementById('slippyConfidence');
+  const confidenceEggsSpan = document.getElementById('confidenceEggs');
   const keyPointsSection = document.getElementById('keyPointsSection');
   const tacticsTitleH3 = document.getElementById('tacticsTitle');
   const keyPointsListUl = document.getElementById('keyPointsList');
@@ -24,8 +24,9 @@ document.addEventListener('DOMContentLoaded', async function() {
 
   async function updateButtonAndInstruction() {
     try {
-      // Instruction text is now static in HTML for primary context menu guidance.
-      // Button is for "Analyze Full Page (Beta)" and always enabled.
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      const currentUrl = tab && tab.url ? tab.url : "";
+      // Instruction text is static in HTML, button always enabled
       instructionTextP.textContent = "To analyze, select text on any page, then right-click and choose 'TF You Just Say?'.";
       analyzeBtn.textContent = "Analyze Full Page (Beta)";
       analyzeBtn.disabled = false;
@@ -34,7 +35,7 @@ document.addEventListener('DOMContentLoaded', async function() {
       console.error("Error setting up initial button/instruction state:", e);
       instructionTextP.textContent = "Select text & right-click to analyze.";
       analyzeBtn.textContent = "Analyze Full Page (Beta)";
-      analyzeBtn.disabled = false; 
+      analyzeBtn.disabled = false;
     }
   }
   updateButtonAndInstruction();
@@ -52,7 +53,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     configMessage.style.display = 'none';
     loadingMessage.textContent = message || defaultLoadingMessage;
     loadingMessage.style.display = 'block';
-    
     const currentAnalyzeBtnText = analyzeBtn.textContent;
     if (currentAnalyzeBtnText !== "Analyzing...") {
         analyzeBtn.setAttribute('data-original-text', currentAnalyzeBtnText);
@@ -65,14 +65,13 @@ document.addEventListener('DOMContentLoaded', async function() {
     loadingMessage.style.display = 'none';
     const originalText = analyzeBtn.getAttribute('data-original-text') || "Analyze Full Page (Beta)";
     analyzeBtn.textContent = originalText;
-    analyzeBtn.disabled = false; // "Analyze Full Page" button is generally always enabled
+    analyzeBtn.disabled = false;
   }
 
   function renderResults(analysisData, wasFromContextMenu = false) {
     console.log("TFYJS Popup: Attempting to render results:", analysisData);
     hideLoadingStateRestoreButton();
     resultsDiv.style.display = 'block';
-
     if (analysisData.error) {
       displayError(analysisData.error);
     } else if (analysisData.llmResponse) {
@@ -90,7 +89,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     try {
       const data = await chrome.storage.local.get(['analysisTrigger', 'lastAnalysisResults', 'analysisTimestamp', 'selectedTextContent']);
       const oneMinute = 1 * 60 * 1000;
-
       if (data.analysisTimestamp && (Date.now() - data.analysisTimestamp < oneMinute)) {
         if (data.analysisTrigger === 'contextMenuLoading') {
           console.log("TFYJS Popup: Found 'contextMenuLoading' trigger in storage.");
@@ -101,13 +99,12 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
       } else {
         if (data.analysisTrigger || data.lastAnalysisResults) {
-            console.log("TFDYJS Popup: Clearing stale context menu analysis data from storage.");
+            console.log("TFYJS Popup: Clearing stale context menu analysis data from storage.");
             await chrome.storage.local.remove(['analysisTrigger', 'lastAnalysisResults', 'analysisTimestamp', 'selectedTextContent']);
         }
       }
-    } catch (e) { console.error("TFDYJS Popup: Error in checkForContextMenuAnalysisOnLoad:", e); }
+    } catch (e) { console.error("TFYJS Popup: Error in checkForContextMenuAnalysisOnLoad:", e); }
   }
-
   checkForContextMenuAnalysisOnLoad();
 
   chrome.storage.onChanged.addListener(async (changes, areaName) => {
@@ -120,17 +117,16 @@ document.addEventListener('DOMContentLoaded', async function() {
             console.log("TFYJS Popup: Rendering results from storage change (contextMenuDone).");
             renderResults(data.lastAnalysisResults, true);
         } else {
-            console.warn("TFDYJS Popup: 'contextMenuDone' trigger but results are stale or missing from storage.");
+            console.warn("TFYJS Popup: 'contextMenuDone' trigger but results are stale or missing from storage.");
         }
       } else if (changes.analysisTrigger.newValue === 'contextMenuLoading') {
           const data = await chrome.storage.local.get(['selectedTextContent']);
-          console.log("TFDYJS Popup: Showing loading state from storage change (contextMenuLoading).");
+          console.log("TFYJS Popup: Showing loading state from storage change (contextMenuLoading).");
           showLoadingState(`💥 Analyzing selected text: "${(data.selectedTextContent || "selection").substring(0, 30)}..."`);
       }
     }
   });
   
-  // This direct message listener is a fallback but storage.onChanged is primary.
   chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === "contextAnalysisComplete" && request.results) {
       console.log("TFYJS Popup: Received contextAnalysisComplete direct message (less common).");
@@ -150,7 +146,6 @@ document.addEventListener('DOMContentLoaded', async function() {
           configMessage.style.display = 'block';
           return;
         }
-        
         let pageContentResponse;
         try {
             await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ['content.js'] });
@@ -160,12 +155,8 @@ document.addEventListener('DOMContentLoaded', async function() {
             displayError(`Failed to get text from page: ${scriptErr.message}. Try selecting text & right-clicking.`);
             return;
         }
-
         if (pageContentResponse && pageContentResponse.text) {
-          const analysisResults = await chrome.runtime.sendMessage({ 
-            action: "analyzeWithLLM", 
-            text: pageContentResponse.text 
-          });
+          const analysisResults = await chrome.runtime.sendMessage({ action: "analyzeWithLLM", text: pageContentResponse.text });
           renderResults(analysisResults, false); 
         } else if (pageContentResponse && pageContentResponse.error) {
           displayError(pageContentResponse.error);
@@ -196,15 +187,14 @@ document.addEventListener('DOMContentLoaded', async function() {
     if (slippyOpeningDiv) slippyOpeningDiv.innerHTML = '';
     if (assessmentExplanationDiv) assessmentExplanationDiv.innerHTML = '';
     if (probabilityScoreP) probabilityScoreP.textContent = '';
-    if (confidenceEggsSpan) confidenceEggsSpan.innerHTML = ''; // Changed from probabilityConfidenceP
+    if (confidenceEggsSpan) confidenceEggsSpan.innerHTML = '';
     if (keyPointsListUl) keyPointsListUl.innerHTML = '';
     if (slippyClosingDiv) slippyClosingDiv.innerHTML = '';
 
     if (mainAssessmentSection) mainAssessmentSection.style.display = 'block';
     if (deceptionProbabilitySection) deceptionProbabilitySection.style.display = 'block';
     if (keyPointsSection) keyPointsSection.style.display = 'block';
-    if (tacticsTitleH3) tacticsTitleH3.textContent = "Slippy's Key Observations:";
-
+    // Titles are now set in HTML or dynamically below for satire
 
     if (slippyOpeningDiv && llmResponse.slippy_opening_remark) {
       slippyOpeningDiv.textContent = llmResponse.slippy_opening_remark;
@@ -231,21 +221,30 @@ document.addEventListener('DOMContentLoaded', async function() {
             if (probabilityScoreP) {
                 probabilityScoreP.textContent = `${llmResponse.main_assessment.deception_probability_percentage}%`;
             }
-            if (confidenceEggsSpan && llmResponse.main_assessment?.confidence_in_assessment_eggs !== undefined) {
+            if (confidenceEggsSpan && slippyConfidenceDiv && llmResponse.main_assessment?.confidence_in_assessment_eggs !== undefined) {
                 const eggCount = parseInt(llmResponse.main_assessment.confidence_in_assessment_eggs);
                 if (eggCount >= 1 && eggCount <= 5) {
                     confidenceEggsSpan.innerHTML = '🥚'.repeat(eggCount);
                 } else {
-                    confidenceEggsSpan.innerHTML = 'N/A'; // Fallback if egg count is weird
+                    confidenceEggsSpan.innerHTML = 'N/A';
                 }
-                slippyConfidenceDiv.style.display = 'block';
+                slippyConfidenceDiv.style.display = 'flex'; // Ensure parent is visible
             } else if (slippyConfidenceDiv) {
-                 slippyConfidenceDiv.style.display = 'none';
+                 slippyConfidenceDiv.style.display = 'none'; // Hide if no egg data
             }
         }
     }
 
     if (keyPointsSection && keyPointsListUl) {
+        // Set title for key points / tactics
+        if (tacticsTitleH3) {
+            if (llmResponse.is_satire_or_humor) {
+                tacticsTitleH3.textContent = "Slippy's Satirical Snippets:";
+            } else {
+                tacticsTitleH3.textContent = "WTF Slippy Saw:"; // New default title
+            }
+        }
+
         if (llmResponse.key_points_for_user && llmResponse.key_points_for_user.length > 0) {
             keyPointsListUl.innerHTML = ''; 
             llmResponse.key_points_for_user.forEach(point => {
@@ -255,16 +254,13 @@ document.addEventListener('DOMContentLoaded', async function() {
                 keyPointsListUl.appendChild(li);
             });
             keyPointsSection.style.display = 'block';
-            if (tacticsTitleH3) {
-                tacticsTitleH3.textContent = llmResponse.is_satire_or_humor ? "Slippy's Satirical Snippets:" : "Slippy's Key Observations:";
-            }
         } else {
             keyPointsListUl.innerHTML = '';
             const noPointsP = document.createElement('p');
             if (llmResponse.is_satire_or_humor) {
-                noPointsP.textContent = "Slippy notes the general comedic style here, no specific tropes highlighted from the list.";
+                noPointsP.textContent = "Slippy notes the general comedic style here, rather than specific extracted tropes.";
             } else {
-                noPointsP.textContent = "Slippy didn't have specific key points to hoot about for this one.";
+                noPointsP.textContent = "Slippy didn't have specific tactical observations to hoot about for this one.";
             }
             keyPointsListUl.appendChild(noPointsP);
         }
