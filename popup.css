@@ -1,28 +1,198 @@
-/* Add or adjust these styles in your existing popup.css */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
+:root {
+  --primary-orange: #fd6714;
+  --main-bg: #FFFFFF;
+  --card-bg: #F4F4F4; /* For sections inside the white popup */
+  --text-primary: #222222;
+  --text-secondary: #666666;
+  --border-color: #000000; /* Main container border */
+  --section-border-color: #E0E0E0; /* Softer border for internal sections */
+  --error-bg: #ffe0e0;
+  --error-text: #8B0000;
+  --error-border: #ffc0c0;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  width: 390px;
+  padding: 0;
+  margin:0;
+  background-color: var(--main-bg);
+  color: var(--text-primary);
+}
+
+.container {
+  background-color: var(--main-bg);
+  padding: 20px;
+  border: 3px solid var(--border-color);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  width: auto;
+  min-width: 350px; /* Ensure it's not too narrow */
+  box-sizing: border-box;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+#popupLogo {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 5px;
+}
+
+h1 {
+  font-size: 2.25em;
+  font-weight: 700;
+  color: var(--border-color);
+  text-align: center;
+  margin-top: 0;
+  margin-bottom: 10px;
+  letter-spacing: -0.5px;
+}
+
+.instruction {
+  font-size: 13px;
+  color: var(--text-secondary);
+  text-align: center;
+  margin-bottom: 15px;
+  padding: 0 10px;
+}
+
+button#analyzeBtn {
+  background-color: var(--primary-orange);
+  color: #FFFFFF;
+  border: none;
+  padding: 12px 20px;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  width: 100%;
+  margin-top: 5px;
+  margin-bottom: 20px;
+  transition: background-color 0.2s ease-in-out, transform 0.1s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+button#analyzeBtn:disabled {
+    background-color: #cccccc;
+    color: #888888;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+button#analyzeBtn:hover:not(:disabled) {
+  background-color: #ff8533;
+}
+button#analyzeBtn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+#statusMessages p {
+  text-align: center;
+  padding: 10px 12px;
+  border-radius: 6px;
+  margin-bottom: 15px;
+  font-size: 13px;
+  border-width: 1px;
+  border-style: solid;
+}
+
+#loadingMessage {
+  color: var(--text-primary);
+  background-color: #e0e0e0;
+  border-color: var(--primary-orange);
+}
+
+.error-message {
+  color: var(--error-text);
+  background-color: var(--error-bg);
+  border-color: var(--error-border);
+}
+
+.config-message {
+  color: var(--text-primary);
+  background-color: #e0e0e0;
+  border-color: var(--border-color);
+}
+
+.config-message a {
+  color: var(--primary-orange);
+  font-weight: 600;
+  text-decoration: none;
+}
+.config-message a:hover {
+  text-decoration: underline;
+}
+
+#results {
+    margin-top: 15px;
+}
+
+.analysis-section {
+    background-color: var(--card-bg);
+    border: 1px solid var(--section-border-color);
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+}
+.analysis-section:last-child {
+    margin-bottom: 0;
+}
+
+.analysis-section h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--primary-orange);
+  margin-top: 0;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--section-border-color);
+}
+
+/* Styles for Slippy's output structure */
 .slippy-remark {
   font-style: italic;
   color: var(--text-secondary);
   padding: 10px 15px;
   border-left: 3px solid var(--primary-orange);
-  background-color: var(--card-bg); /* Or a slightly different shade if preferred */
+  background-color: #E9E9E9; /* Slightly different background for remarks */
   margin-top: 10px;
-  margin-bottom: 20px; /* More space after remarks */
+  margin-bottom: 20px;
+  border-radius: 4px;
 }
 
 #assessmentType {
   font-weight: 600;
   color: var(--primary-orange);
   margin-bottom: 8px;
-  font-size: 1.1em;
+  font-size: 1.1em; /* e.g., "Deception/Manipulation Analysis" */
 }
 
 #assessmentExplanation {
   margin-bottom: 10px;
+  color: var(--text-primary);
+  line-height: 1.7;
+}
+#assessmentExplanation strong {
+    color: var(--text-primary); /* Keep strong black for emphasis */
+    font-weight: 600;
+}
+#assessmentExplanation em {
+    font-style: italic;
 }
 
+
 #probabilityScore {
-  font-size: 28px; /* Make probability score prominent */
+  font-size: 28px;
   font-weight: 700;
   color: var(--primary-orange);
   text-align: center;
@@ -38,21 +208,88 @@
 }
 
 #keyPointsList {
-  list-style-type: none; /* Or 'disc' if you prefer bullets */
+  list-style-type: none;
   padding-left: 0;
 }
 
 #keyPointsList li {
-  background-color: #FFFFFF; /* White background for key points on card-bg */
+  background-color: #FFFFFF;
   border: 1px solid var(--section-border-color);
-  padding: 8px 12px;
-  margin-bottom: 8px;
-  border-radius: 4px;
+  padding: 10px 12px; /* Increased padding */
+  margin-bottom: 10px; /* Increased margin */
+  border-radius: 6px; /* More rounded */
   font-size: 13px;
   color: var(--text-primary);
+  line-height: 1.5;
 }
 #keyPointsList li::before {
-  content: "🦉"; /* Owl bullet for fun, or use another character */
-  margin-right: 8px;
+  content: "🦉";
+  margin-right: 10px; /* More space for owl */
   color: var(--primary-orange);
+  font-size: 1.1em; /* Slightly larger owl */
+}
+#keyPointsList li strong {
+    font-weight: 600;
+}
+#keyPointsList li em {
+    font-style: italic;
+}
+
+/* Ensure overview section also handles markdown if used */
+#overviewSection div,
+#overviewSection p {
+    font-size: 14px;
+    color: var(--text-primary);
+    line-height: 1.7;
+}
+#overviewSection strong {
+    color: var(--text-primary); /* Keep strong black for emphasis */
+    font-weight: 600;
+}
+#overviewSection em {
+    font-style: italic;
+}
+
+/* Fallback for old structure if it ever appears - can be removed later */
+.fallacy-item, .tactic-item {
+  margin-bottom: 12px;
+  padding: 12px;
+  border-radius: 6px;
+  background-color: #FFFFFF;
+  border: 1px solid var(--section-border-color);
+}
+.fallacy-type, .tactic-type { /* Unused now, but kept for a moment */
+  font-weight: 600;
+  color: var(--primary-orange);
+  margin-bottom: 6px;
+  font-size: 14px;
+}
+.fallacy-quote, .tactic-quote {
+  font-style: italic;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  padding: 8px 10px;
+  border-left: 3px solid var(--primary-orange);
+  font-size: 13px;
+  background-color: #E9E9E9;
+  display: block;
+  border-radius: 3px;
+}
+.fallacy-explanation, .tactic-explanation {
+  color: var(--text-primary);
+  font-size: 13px;
+}
+.learn-more { /* Unused now, but kept for a moment */
+  font-size: 12px;
+  color: var(--primary-orange);
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  margin-top: 8px;
+  font-weight: 500;
+  border-bottom: 1px dotted var(--primary-orange);
+}
+.learn-more:hover {
+    color: #ff8533;
+    border-bottom: 1px solid #ff8533;
 }
