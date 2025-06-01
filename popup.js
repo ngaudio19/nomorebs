@@ -1,4 +1,3 @@
-//popup.js
 document.addEventListener('DOMContentLoaded', async function() {
   const analyzeBtn = document.getElementById('analyzeBtn');
   const resultsDiv = document.getElementById('results');
@@ -14,13 +13,22 @@ document.addEventListener('DOMContentLoaded', async function() {
   const naughtinessRatingP = document.getElementById('naughtinessRating');
   const naughtinessJustificationP = document.getElementById('naughtinessJustification');
   const tacticsSection = document.getElementById('tacticsSection');
-  const tacticsTitleH3 = document.getElementById('tacticsTitle');
+  const tacticsTitleH3 = document.getElementById('tacticsTitle'); // Make sure this ID is in your HTML
   const tacticsContainer = document.getElementById('tacticsContainer');
+
+  // References for Slippy's specific output areas from HTML
+  const slippyOpeningDiv = document.getElementById('slippyOpening');
+  const assessmentTypeDiv = document.getElementById('assessmentType'); // Assuming this exists or is part of overview
+  const assessmentExplanationDiv = document.getElementById('assessmentExplanation'); // Assuming this exists or is part of overview
+  const probabilityScoreP = document.getElementById('probabilityScore');
+  const probabilityConfidenceP = document.getElementById('probabilityConfidence');
+  const keyPointsListUl = document.getElementById('keyPointsList');
+  const slippyClosingDiv = document.getElementById('slippyClosing');
+
 
   const defaultLoadingMessage = "💥 Truth serum activated!";
   loadingMessage.textContent = defaultLoadingMessage;
 
-  // Function to update button and instruction based on URL
   async function updateButtonAndInstruction() {
     try {
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -37,7 +45,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     } catch (e) {
       console.error("Error querying tabs for URL:", e);
       instructionTextP.textContent = "Select text & right-click to analyze, or use button for page content.";
-      analyzeBtn.disabled = true; // Default to disabled if tab check fails
+      analyzeBtn.disabled = true;
     }
   }
   updateButtonAndInstruction();
@@ -69,7 +77,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     loadingMessage.style.display = 'none';
     const originalText = analyzeBtn.getAttribute('data-original-text') || "Analyze Full Page (Beta)";
     analyzeBtn.textContent = originalText;
-    updateButtonAndInstruction(); // Re-evaluate button state after loading
+    updateButtonAndInstruction();
   }
 
   function renderResults(analysisData, clearStorage = true) {
@@ -88,111 +96,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
   }
 
-  // Check storage for context menu triggered analysis on load
   async function checkForContextMenuAnalysisOnLoad() {
     try {
-      const data = await chrome.storage.local.get(['analysisTrigger', 'lastAnalysisResults', 'analysisTimestamp', 'selectedTextContent']);
-      const oneMinute = 1 * 60 * 1000; // Only use recent results
-
-      if (data.analysisTimestamp && (Date.now() - data.analysisTimestamp < oneMinute)) {
-        if (data.analysisTrigger === 'contextMenuLoading') {
-          showLoadingState(`💥 Analyzing selected text: "${(data.selectedTextContent || "").substring(0, 30)}..."`);
-          // The storage.onChanged listener below will pick up the 'contextMenuDone'
-        } else if (data.analysisTrigger === 'contextMenuDone' && data.lastAnalysisResults) {
-          console.log("Found completed context menu analysis in storage on load.");
-          renderResults(data.lastAnalysisResults);
-          // storage is cleared by renderResults calling the function that clears it
-        }
-      } else {
-        // Clear stale data
-        await chrome.storage.local.remove(['analysisTrigger', 'lastAnalysisResults', 'analysisTimestamp', 'selectedTextContent']);
-      }
-    } catch (e) { console.error("Error checking for context menu analysis on load:", e); }
-  }
-
-  checkForContextMenuAnalysisOnLoad();
-
-  // Listener for direct messages from background (e.g., when context menu analysis completes IF popup was already open)
-  chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    if (request.action === "contextAnalysisComplete" && request.results) {
-      console.log("Popup received contextAnalysisComplete direct message.");
-      renderResults(request.results);
-      // storage is cleared by renderResults
-      return true; // Acknowledge message
-    }
-  });
-
-  // Listener for storage changes (more reliable for context menu flow)
-  chrome.storage.onChanged.addListener(async (changes, areaName) => {
-    if (areaName === 'local') {
-      if (changes.analysisTrigger && changes.analysisTrigger.newValue === 'contextMenuDone') {
-        // To ensure we get the results that were set along with this trigger:
-        const data = await chrome.storage.local.get(['lastAnalysisResults', 'analysisTimestamp']);
-        const oneMinute = 1 * 60 * 1000;
-        if (data.lastAnalysisResults && data.analysisTimestamp && (Date.now() - data.analysisTimestamp < oneMinute)) {
-            console.log("Popup detected context menu analysis completion via storage change.");
-            renderResults(data.lastAnalysisResults);
-             // Storage is cleared by renderResults
-        }
-      } else if (changes.analysisTrigger && changes.analysisTrigger.newValue === 'contextMenuLoading') {
-          const data = await chrome.storage.local.get(['selectedTextContent']);
-          showLoadingState(`💥 Analyzing selected text: "${(data.selectedTextContent || "").substring(0, 30)}..."`);
-      }
-    }
-  });
-
-  analyzeBtn.addEventListener('click', async () => {
-    showLoadingState(defaultLoadingMessage);
-    try {
-      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-      if (tab && tab.id && !tab.url.startsWith("chrome://")) {
-        const settings = await chrome.storage.local.get(['apiKey']);
-        if (!settings.apiKey) {
-          hideLoadingStateRestoreButton();
-          configMessage.style.display = 'block';
-          return;
-        }
-        
-        let pageContentResponse;
-        try {
-            await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ['content.js'] });
-            pageContentResponse = await chrome.tabs.sendMessage(tab.id, { action: "getPostText" });
-        } catch (scriptErr) {
-            console.error("Error injecting or communicating with content script:", scriptErr);
-            displayError(`Failed to get text from page: ${scriptErr.message}. Try selecting text and right-clicking.`);
-            return;
-        }
-
-        if (pageContentResponse && pageContentResponse.text) {
-          const analysisResults = await chrome.runtime.sendMessage({ 
-            action: "analyzeWithLLM", 
-            text: pageContentResponse.text 
-          });
-          renderResults(analysisResults, false); // Don't clear storage; this wasn't a context menu flow
-        } else if (pageContentResponse && pageContentResponse.error) {
-          displayError(pageContentResponse.error);
-        } else {
-          displayError("Could not extract main content from this page. Try selecting text and right-clicking.");
-        }
-      } else {
-        displayError("Cannot analyze this page (e.g., internal Chrome page or no active tab).");
-        hideLoadingStateRestoreButton();
-      }
-    } catch (error) {
-      console.error("Error in analyzeBtn:", error);
-      displayError(`An error occurred: ${error.message}.`);
-    }
-  });
-
-  function displayError(message) {
-    errorMessage.textContent = message;
-    errorMessage.style.display = 'block';
-    resultsDiv.style.display = 'none';
-    hideLoadingStateRestoreButton();
-  }
-
-  function displayAnalysis(llmResponse) {
-    // ... (This function remains IDENTICAL to the one I provided in the response
-    //      that started with "You're absolutely right to point this out! That output means Slippy...")
-    //      It correctly parses Slippy's JSON structure.
-    //      For brevity, I'
+      const data = await chrome.storage.local.get(['analysisTrigger', 'lastAnalysisResults', 'analysisTimestamp', '
