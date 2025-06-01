@@ -1,16 +1,15 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
-  --primary-orange: #FF9900; /* Main accent orange */
-  --dark-bg: #1A1A1A; /* Main background */
-  --card-bg: #2C2C2C; /* Background for cards/sections */
-  --text-primary: #E0E0E0; /* Primary light text */
-  --text-secondary: #A0A0A0; /* Secondary, dimmer text */
-  --border-color: #444444; /* Borders */
-  --error-bg: #4d2a2a; /* Darker red background for errors */
-  --error-text: #ffc2c2; /* Lighter red text for errors */
-  --error-border: #8B0000; /* Dark red border for errors */
-
+  --primary-orange: #fd6714; /* Updated accent orange */
+  --main-bg: #FFFFFF; /* Main background is now white */
+  --card-bg: #F4F4F4; /* Light grey for cards/sections */
+  --text-primary: #222222; /* Primary dark text */
+  --text-secondary: #666666; /* Secondary, dimmer text */
+  --border-color: #000000; /* Borders are black */
+  --error-bg: #ffe0e0; /* Light red background for errors */
+  --error-text: #8B0000; /* Dark red text for errors */
+  --error-border: #ffc0c0; /* Lighter red border for errors */
 }
 
 body {
@@ -18,65 +17,70 @@ body {
   font-size: 14px;
   line-height: 1.6;
   width: 390px;
-  padding: 15px;
-  background-color: var(--dark-bg);
+  padding: 0; /* Remove padding from body if container will handle it */
+  margin:0; /* Remove default margin */
+  background-color: var(--main-bg); /* Ensure body matches container if no separate page bg */
   color: var(--text-primary);
+  /* display: flex; /* Removed flex from body to allow normal block flow for container with margin */
+  /* justify-content: center; */
+  /* align-items: center; */
+  /* min-height: 100vh; */ /* May not be needed for extension popup */
 }
 
 .container {
-  background-color: var(--dark-bg); /* Use main dark bg for container too */
+  background-color: var(--main-bg);
   padding: 20px;
-  border-radius: 10px;
-  /* No border needed if body and container are same dark color, or add subtle one */
-  /* border: 1px solid var(--border-color); */
+  border: 3px solid var(--border-color); /* Medium thickness black border */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  width: auto; /* Let content define width up to max-width */
+  min-width: 350px; /* Based on previous body width, ensure it's not too narrow */
+  box-sizing: border-box; /* Ensure padding and border are included in width/height */
 }
 
-.header-title {
+.header {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  margin-bottom: 5px;
+  margin-bottom: 10px;
 }
 
 #popupLogo {
-  width: 32px; /* Adjust size as needed */
-  height: 32px;
-  margin-right: 10px;
-  vertical-align: middle; /* Helps if h1 has different line-height */
+  width: 48px;
+  height: 48px;
+  margin-bottom: 5px;
 }
 
 h1 {
-  font-size: 22px;
+  font-size: 2.25em; /* ~1.5x bigger than 16px base, so 36px */
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--border-color); /* Black heading */
   text-align: center;
   margin-top: 0;
-  margin-bottom: 0; /* Adjusted */
+  margin-bottom: 10px;
+  letter-spacing: -0.5px;
 }
 
-.subtitle {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--primary-orange);
+.instruction { /* This was the motivational copy div previously, renamed for clarity */
+  font-size: 14px;
+  color: var(--text-secondary);
   text-align: center;
-  margin-top: 0px;
   margin-bottom: 15px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
 }
 
-
-.motivational-copy {
+.motivational-copy { /* This div is still in HTML, can be used for other dynamic messages or removed if instruction covers it */
   font-size: 13px;
   color: var(--text-secondary);
   text-align: center;
   margin-bottom: 20px;
   min-height: 1.5em;
+  display: none; /* Hidden for now as per instruction change, can be re-enabled if needed */
 }
+
 
 button#analyzeBtn {
   background-color: var(--primary-orange);
-  color: #000000; /* Black text on orange button */
+  color: #FFFFFF; /* White text on orange button */
   border: none;
   padding: 12px 20px;
   text-align: center;
@@ -87,10 +91,11 @@ button#analyzeBtn {
   width: 100%;
   margin-bottom: 20px;
   transition: background-color 0.2s ease-in-out, transform 0.1s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 button#analyzeBtn:hover {
-  background-color: #FFB84D; /* Lighter orange on hover */
+  background-color: #ff8533; /* Slightly lighter orange on hover */
 }
 button#analyzeBtn:active {
   transform: scale(0.98);
@@ -108,8 +113,8 @@ button#analyzeBtn:active {
 
 #loadingMessage {
   color: var(--text-primary);
-  background-color: var(--card-bg);
-  border-color: var(--primary-orange); /* Orange border for loading */
+  background-color: #e0e0e0;
+  border-color: var(--primary-orange);
 }
 
 .error-message {
@@ -120,7 +125,7 @@ button#analyzeBtn:active {
 
 .config-message {
   color: var(--text-primary);
-  background-color: var(--card-bg);
+  background-color: #e0e0e0;
   border-color: var(--border-color);
 }
 
@@ -139,7 +144,7 @@ button#analyzeBtn:active {
 
 .analysis-section {
     background-color: var(--card-bg);
-    border: 1px solid var(--border-color);
+    border: 1px solid #cccccc;
     padding: 15px;
     border-radius: 8px;
     margin-bottom: 15px;
@@ -151,11 +156,11 @@ button#analyzeBtn:active {
 .analysis-section h3 {
   font-size: 16px;
   font-weight: 600;
-  color: var(--primary-orange); /* Orange section headers */
+  color: var(--primary-orange);
   margin-top: 0;
   margin-bottom: 10px;
   padding-bottom: 8px;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid #cccccc;
 }
 
 #overviewSection p {
@@ -163,15 +168,14 @@ button#analyzeBtn:active {
     color: var(--text-primary);
     line-height: 1.7;
 }
-#overviewSection p strong { /* For satire explanation emphasis */
+#overviewSection p strong {
     color: var(--primary-orange);
 }
-
 
 .rating-value {
     font-size: 24px;
     font-weight: 700;
-    color: var(--primary-orange); /* Orange rating */
+    color: var(--primary-orange);
     text-align: center;
     margin-bottom: 5px;
 }
@@ -187,8 +191,8 @@ button#analyzeBtn:active {
   margin-bottom: 12px;
   padding: 12px;
   border-radius: 6px;
-  background-color: #333333; /* Slightly lighter card background for fallacy items */
-  border: 1px solid var(--border-color);
+  background-color: #f9f9f9; /* Kept this very light for readability inside card-bg */
+  border: 1px solid #dddddd;
 }
 #fallaciesContainer .fallacy-item:last-child {
     margin-bottom: 0;
@@ -196,7 +200,7 @@ button#analyzeBtn:active {
 
 .fallacy-type {
   font-weight: 600;
-  color: var(--primary-orange); /* Orange for fallacy type */
+  color: var(--primary-orange);
   margin-bottom: 6px;
   font-size: 14px;
 }
@@ -208,7 +212,7 @@ button#analyzeBtn:active {
   padding: 8px 10px;
   border-left: 3px solid var(--primary-orange);
   font-size: 13px;
-  background-color: var(--card-bg);
+  background-color: #e0e0e0; /* Matching loading/config message bg */
   display: block;
   border-radius: 3px;
 }
@@ -222,13 +226,13 @@ button#analyzeBtn:active {
   font-size: 12px;
   color: var(--primary-orange);
   cursor: pointer;
-  text-decoration: none; /* No underline by default */
+  text-decoration: none;
   display: inline-block;
   margin-top: 8px;
   font-weight: 500;
-  border-bottom: 1px dotted var(--primary-orange); /* Dotted underline */
+  border-bottom: 1px dotted var(--primary-orange);
 }
 .learn-more:hover {
-    color: #FFB84D; /* Lighter orange on hover */
-    border-bottom: 1px solid #FFB84D;
+    color: #ff8533;
+    border-bottom: 1px solid #ff8533;
 }
