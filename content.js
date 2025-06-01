@@ -1,5 +1,6 @@
+// Listener for page content extraction (used by popup's "Analyze Full Page (Beta)" button)
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.action === "getPostText") { // Action name kept for compatibility with popup.js
+  if (request.action === "getPostText") {
     try {
       const mainText = findMainPageContent();
       if (mainText) {
@@ -16,21 +17,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 });
 
 function findMainPageContent() {
-  // This is a VERY basic heuristic and will not work well on many complex pages.
-  // It's a placeholder for a more sophisticated main content extraction algorithm.
-
-  // Try common semantic tags for main content
   const mainSelectors = ['article', 'main', 'div[role="main"]', 'div[class*="post-content"]', 'div[class*="article-body"]'];
   for (const selector of mainSelectors) {
     const element = document.querySelector(selector);
-    if (element && element.innerText && element.innerText.trim().length > 200) { // Arbitrary length
-      // console.log("TFDYJS: Found content in selector:", selector);
+    if (element && element.innerText && element.innerText.trim().length > 200) {
       return element.innerText.trim();
     }
   }
-
-  // If no specific main content tags, try to find the largest text block in the body.
-  // This is very crude.
   let largestText = '';
   const allParagraphs = document.querySelectorAll('p');
   let combinedText = Array.from(allParagraphs).map(p => p.innerText.trim()).join("\n\n");
@@ -38,23 +31,17 @@ function findMainPageContent() {
   if (combinedText.length > largestText.length) {
     largestText = combinedText;
   }
-  
-  // As an absolute fallback, take a large chunk of body text, excluding script/style.
-  if (largestText.length < 500) { // If paragraphs didn't yield much
+  if (largestText.length < 500) { 
       const bodyClone = document.body.cloneNode(true);
-      bodyClone.querySelectorAll('script, style, nav, header, footer, aside, form, button, [aria-hidden="true"]').forEach(el => el.remove());
-      let bodyText = bodyClone.innerText.trim().replace(/\s\s+/g, ' '); // Replace multiple spaces/newlines
+      bodyClone.querySelectorAll('script, style, nav, header, footer, aside, form, button, [aria-hidden="true"], .sidebar, #sidebar, .comments, #comments, .footer, #footer').forEach(el => el.remove());
+      let bodyText = bodyClone.innerText.trim().replace(/\s\s+/g, ' '); 
       if (bodyText.length > 200) {
-          // console.log("TFDYJS: Found content by body text fallback.");
-          return bodyText.substring(0, 5000); // Limit length
+          return bodyText.substring(0, 7000); // Increased limit slightly for more context
       }
   }
-  
   if (largestText.length > 200) {
-    // console.log("TFDYJS: Found content by combining paragraphs.");
-    return largestText.substring(0, 5000); // Limit length
+    return largestText.substring(0, 7000);
   }
-
   console.warn("TFDYJS content.js: findMainPageContent could not reliably find main text.");
   return null;
 }
