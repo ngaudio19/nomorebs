@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "TFDYJS: TF Did You Just Say",
-  "version": "0.6.0",
-  "description": "Analyzes selected text for logical fallacies & manipulative language with a cheeky AI. What TF Did You Just Say?!",
+  "version": "0.7.0",
+  "description": "Analyzes selected text for deceptive language & manipulative rhetoric with a cheeky AI. What TF Did You Just Say?!",
   "permissions": [
     "activeTab",
     "storage",
