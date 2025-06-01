@@ -1,15 +1,16 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
-  --primary-orange: #fd6714; /* Updated accent orange */
-  --main-bg: #FFFFFF; /* Main background is now white */
-  --card-bg: #F4F4F4; /* Light grey for cards/sections */
-  --text-primary: #222222; /* Primary dark text */
-  --text-secondary: #666666; /* Secondary, dimmer text */
-  --border-color: #000000; /* Borders are black */
-  --error-bg: #ffe0e0; /* Light red background for errors */
-  --error-text: #8B0000; /* Dark red text for errors */
-  --error-border: #ffc0c0; /* Lighter red border for errors */
+  --primary-orange: #fd6714;
+  --main-bg: #FFFFFF;
+  --card-bg: #F4F4F4;
+  --text-primary: #222222;
+  --text-secondary: #666666;
+  --border-color: #000000;
+  --section-border-color: #E0E0E0;
+  --error-bg: #ffe0e0;
+  --error-text: #8B0000;
+  --error-border: #ffc0c0;
 }
 
 body {
@@ -17,24 +18,20 @@ body {
   font-size: 14px;
   line-height: 1.6;
   width: 390px;
-  padding: 0; /* Remove padding from body if container will handle it */
-  margin:0; /* Remove default margin */
-  background-color: var(--main-bg); /* Ensure body matches container if no separate page bg */
+  padding: 0;
+  margin:0;
+  background-color: var(--main-bg);
   color: var(--text-primary);
-  /* display: flex; /* Removed flex from body to allow normal block flow for container with margin */
-  /* justify-content: center; */
-  /* align-items: center; */
-  /* min-height: 100vh; */ /* May not be needed for extension popup */
 }
 
 .container {
   background-color: var(--main-bg);
   padding: 20px;
-  border: 3px solid var(--border-color); /* Medium thickness black border */
+  border: 3px solid var(--border-color);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  width: auto; /* Let content define width up to max-width */
-  min-width: 350px; /* Based on previous body width, ensure it's not too narrow */
-  box-sizing: border-box; /* Ensure padding and border are included in width/height */
+  width: auto;
+  min-width: 350px;
+  box-sizing: border-box;
 }
 
 .header {
@@ -52,35 +49,26 @@ body {
 }
 
 h1 {
-  font-size: 2.25em; /* ~1.5x bigger than 16px base, so 36px */
+  font-size: 2.25em;
   font-weight: 700;
-  color: var(--border-color); /* Black heading */
+  color: var(--border-color);
   text-align: center;
   margin-top: 0;
   margin-bottom: 10px;
   letter-spacing: -0.5px;
 }
 
-.instruction { /* This was the motivational copy div previously, renamed for clarity */
-  font-size: 14px;
-  color: var(--text-secondary);
-  text-align: center;
-  margin-bottom: 15px;
-}
-
-.motivational-copy { /* This div is still in HTML, can be used for other dynamic messages or removed if instruction covers it */
+.instruction {
   font-size: 13px;
   color: var(--text-secondary);
   text-align: center;
-  margin-bottom: 20px;
-  min-height: 1.5em;
-  display: none; /* Hidden for now as per instruction change, can be re-enabled if needed */
+  margin-bottom: 15px;
+  padding: 0 10px;
 }
-
 
 button#analyzeBtn {
   background-color: var(--primary-orange);
-  color: #FFFFFF; /* White text on orange button */
+  color: #FFFFFF;
   border: none;
   padding: 12px 20px;
   text-align: center;
@@ -89,15 +77,22 @@ button#analyzeBtn {
   border-radius: 6px;
   cursor: pointer;
   width: 100%;
+  margin-top: 5px;
   margin-bottom: 20px;
   transition: background-color 0.2s ease-in-out, transform 0.1s ease;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
-
-button#analyzeBtn:hover {
-  background-color: #ff8533; /* Slightly lighter orange on hover */
+button#analyzeBtn:disabled {
+    background-color: #cccccc;
+    color: #888888;
+    cursor: not-allowed;
+    box-shadow: none;
 }
-button#analyzeBtn:active {
+
+button#analyzeBtn:hover:not(:disabled) {
+  background-color: #ff8533;
+}
+button#analyzeBtn:active:not(:disabled) {
   transform: scale(0.98);
 }
 
@@ -144,7 +139,7 @@ button#analyzeBtn:active {
 
 .analysis-section {
     background-color: var(--card-bg);
-    border: 1px solid #cccccc;
+    border: 1px solid var(--section-border-color);
     padding: 15px;
     border-radius: 8px;
     margin-bottom: 15px;
@@ -160,17 +155,23 @@ button#analyzeBtn:active {
   margin-top: 0;
   margin-bottom: 10px;
   padding-bottom: 8px;
-  border-bottom: 1px solid #cccccc;
+  border-bottom: 1px solid var(--section-border-color);
 }
 
+#overviewSection div, /* Changed from p to div for innerHTML */
 #overviewSection p {
     font-size: 14px;
     color: var(--text-primary);
     line-height: 1.7;
 }
-#overviewSection p strong {
-    color: var(--primary-orange);
+#overviewSection strong {
+    color: var(--primary-orange); /* Or keep it default black for B&W */
+    font-weight: 600;
 }
+#overviewSection em {
+    font-style: italic;
+}
+
 
 .rating-value {
     font-size: 24px;
@@ -187,52 +188,37 @@ button#analyzeBtn:active {
     font-style: italic;
 }
 
-#fallaciesContainer .fallacy-item {
+#tacticsContainer .tactic-item {
   margin-bottom: 12px;
   padding: 12px;
   border-radius: 6px;
-  background-color: #f9f9f9; /* Kept this very light for readability inside card-bg */
-  border: 1px solid #dddddd;
+  background-color: #FFFFFF;
+  border: 1px solid var(--section-border-color);
 }
-#fallaciesContainer .fallacy-item:last-child {
+#tacticsContainer .tactic-item:last-child {
     margin-bottom: 0;
 }
 
-.fallacy-type {
-  font-weight: 600;
-  color: var(--primary-orange);
-  margin-bottom: 6px;
-  font-size: 14px;
-}
-
-.fallacy-quote {
+.tactic-quote {
   font-style: italic;
   color: var(--text-secondary);
   margin-bottom: 8px;
   padding: 8px 10px;
   border-left: 3px solid var(--primary-orange);
   font-size: 13px;
-  background-color: #e0e0e0; /* Matching loading/config message bg */
+  background-color: #E9E9E9;
   display: block;
   border-radius: 3px;
 }
 
-.fallacy-explanation {
+.tactic-explanation {
   color: var(--text-primary);
   font-size: 13px;
 }
-
-.learn-more {
-  font-size: 12px;
-  color: var(--primary-orange);
-  cursor: pointer;
-  text-decoration: none;
-  display: inline-block;
-  margin-top: 8px;
-  font-weight: 500;
-  border-bottom: 1px dotted var(--primary-orange);
+.tactic-explanation strong {
+    font-weight: 600;
+    /* color: var(--primary-orange); // Optional: make explained fallacies orange */
 }
-.learn-more:hover {
-    color: #ff8533;
-    border-bottom: 1px solid #ff8533;
+.tactic-explanation em {
+    font-style: italic;
 }
