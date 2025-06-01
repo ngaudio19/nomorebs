@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "No More Corporate Bullshit (LLM Edition)",
-  "version": "0.5.0",
-  "description": "Analyzes selected text or LinkedIn posts for logical fallacies, considering humor/satire, using an LLM.",
+  "name": "TFDYJS: TF Did You Just Say",
+  "version": "0.6.0",
+  "description": "Analyzes selected text for logical fallacies & manipulative language with a cheeky AI. What TF Did You Just Say?!",
   "permissions": [
     "activeTab",
     "storage",
