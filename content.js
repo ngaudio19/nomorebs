@@ -1,71 +1,60 @@
-// Listener for LinkedIn-specific text extraction (used by popup's "Analyze Post" button)
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.action === "getPostText") {
+  if (request.action === "getPostText") { // Action name kept for compatibility with popup.js
     try {
-      if (window.location.hostname.includes("linkedin.com")) {
-        const postText = findLinkedInPostText();
-        if (postText) {
-          sendResponse({ text: postText });
-        } else {
-          sendResponse({ error: "Could not identify LinkedIn post content. Try clicking the post or scrolling it fully into view." });
-        }
+      const mainText = findMainPageContent();
+      if (mainText) {
+        sendResponse({ text: mainText });
       } else {
-        // This case should ideally be prevented by disabling the button in popup.js
-        sendResponse({ error: "The 'Analyze Post' button is specific to LinkedIn pages." });
+        sendResponse({ error: "Could not automatically identify the main text content on this page. Try selecting text and using the right-click context menu." });
       }
     } catch (e) {
-      console.error("Content script: Error extracting LinkedIn post:", e);
-      sendResponse({ error: `Error extracting post: ${e.message}` });
+      console.error("Content script: Error extracting main page content:", e);
+      sendResponse({ error: `Error extracting content: ${e.message}` });
     }
     return true; // Indicates that the response will be sent asynchronously
   }
 });
 
-function findLinkedInPostText() {
-  // This is the complex LinkedIn-specific DOM traversal logic.
-  // Ensure you have your full LinkedIn text extraction logic here from previous versions.
-  let activeElement = document.activeElement;
-  let potentialPost = activeElement;
-  for (let i = 0; i < 10 && potentialPost && potentialPost.innerText; i++) {
-    const postContentSelectors = [
-        '.feed-shared-update-v2__description-wrapper .update-components-text',
-        '.update-components-text.break-words[dir="ltr"] span[aria-hidden="false"]',
-        '.update-components-text.break-words span[aria-hidden="false"]',
-        '.update-components-text.break-words',
-        '.attributed-text-segment-list__content',
-        '.article-main__content .article-content-body',
-    ];
-    for (const selector of postContentSelectors) {
-        const mainContent = potentialPost.querySelector(selector) || (potentialPost.matches(selector) ? potentialPost : null);
-        if (mainContent && mainContent.innerText && mainContent.innerText.trim().length > 50) {
-            return mainContent.innerText.trim();
-        }
+function findMainPageContent() {
+  // This is a VERY basic heuristic and will not work well on many complex pages.
+  // It's a placeholder for a more sophisticated main content extraction algorithm.
+
+  // Try common semantic tags for main content
+  const mainSelectors = ['article', 'main', 'div[role="main"]', 'div[class*="post-content"]', 'div[class*="article-body"]'];
+  for (const selector of mainSelectors) {
+    const element = document.querySelector(selector);
+    if (element && element.innerText && element.innerText.trim().length > 200) { // Arbitrary length
+      // console.log("TFDYJS: Found content in selector:", selector);
+      return element.innerText.trim();
     }
-    if (potentialPost.closest('.feed-shared-update-v2, .linkedin-article, .activity-card')) {
-        const directTextElement = potentialPost.querySelector('.update-components-text.break-words span[aria-hidden="false"], .update-components-text.break-words, .article-content-body');
-        if (directTextElement && directTextElement.innerText && directTextElement.innerText.trim().length > 50) {
-            return directTextElement.innerText.trim();
-        }
-    }
-    potentialPost = potentialPost.parentElement;
   }
-  const genericSelectors = [
-    '.feed-shared-update-v2__description-wrapper .update-components-text.break-words span[aria-hidden="false"]',
-    '.feed-shared-update-v2__description-wrapper .update-components-text.break-words',
-    'main .feed-shared-update-v2__description-wrapper .update-components-text.break-words span[aria-hidden="false"]',
-    '.article-main__content .article-content-body',
-    '.update-components-text[dir="ltr"]',
-  ];
-  for (const selector of genericSelectors) {
-    const elements = document.querySelectorAll(selector);
-    for (const element of elements) {
-      const style = window.getComputedStyle(element);
-      const isVisible = style.display !== 'none' && style.visibility !== 'hidden' && element.offsetHeight > 0 && element.offsetWidth > 0;
-      if (isVisible) {
-        const text = element.innerText.trim();
-        if (text.length > 100) { return text; }
+
+  // If no specific main content tags, try to find the largest text block in the body.
+  // This is very crude.
+  let largestText = '';
+  const allParagraphs = document.querySelectorAll('p');
+  let combinedText = Array.from(allParagraphs).map(p => p.innerText.trim()).join("\n\n");
+
+  if (combinedText.length > largestText.length) {
+    largestText = combinedText;
+  }
+  
+  // As an absolute fallback, take a large chunk of body text, excluding script/style.
+  if (largestText.length < 500) { // If paragraphs didn't yield much
+      const bodyClone = document.body.cloneNode(true);
+      bodyClone.querySelectorAll('script, style, nav, header, footer, aside, form, button, [aria-hidden="true"]').forEach(el => el.remove());
+      let bodyText = bodyClone.innerText.trim().replace(/\s\s+/g, ' '); // Replace multiple spaces/newlines
+      if (bodyText.length > 200) {
+          // console.log("TFDYJS: Found content by body text fallback.");
+          return bodyText.substring(0, 5000); // Limit length
       }
-    }
   }
+  
+  if (largestText.length > 200) {
+    // console.log("TFDYJS: Found content by combining paragraphs.");
+    return largestText.substring(0, 5000); // Limit length
+  }
+
+  console.warn("TFDYJS content.js: findMainPageContent could not reliably find main text.");
   return null;
 }
