@@ -5,38 +5,24 @@ document.addEventListener('DOMContentLoaded', async function() {
   const errorMessage = document.getElementById('errorMessage');
   const configMessage = document.getElementById('configMessage');
   const openOptionsLink = document.getElementById('openOptionsLink');
-  const instructionTextP = document.getElementById('instructionText');
+  const instructionTextP = document.getElementById('instructionText'); // Retain for potential dynamic updates
 
   const overviewSection = document.getElementById('overviewSection');
   const naughtinessSection = document.getElementById('naughtinessSection');
-  const naughtinessTitleH3 = document.getElementById('naughtinessTitle'); // For satire case
+  const naughtinessTitleH3 = document.getElementById('naughtinessTitle');
   const naughtinessRatingP = document.getElementById('naughtinessRating');
   const naughtinessJustificationP = document.getElementById('naughtinessJustification');
   const tacticsSection = document.getElementById('tacticsSection');
-  const tacticsTitleH3 = document.getElementById('tacticsTitle'); // For satire case
+  const tacticsTitleH3 = document.getElementById('tacticsTitle');
   const tacticsContainer = document.getElementById('tacticsContainer');
 
   const defaultLoadingMessage = "💥 Truth serum activated!";
   loadingMessage.textContent = defaultLoadingMessage;
 
-  // Update instruction text and button state based on current page
-  try {
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    const currentUrl = tab && tab.url ? tab.url : "";
-    if (currentUrl && (currentUrl.includes("linkedin.com/feed") || currentUrl.includes("linkedin.com/posts") || currentUrl.includes("linkedin.com/pulse"))) {
-      instructionTextP.textContent = "Select text & right-click to analyze, or click below to analyze the main LinkedIn post.";
-      analyzeBtn.disabled = false;
-      analyzeBtn.title = "Attempts to analyze the main content of the current LinkedIn post.";
-    } else {
-      instructionTextP.textContent = "To analyze, select text on any page, then right-click and choose 'TFDYJS: Analyze selection'.";
-      analyzeBtn.disabled = true;
-      analyzeBtn.title = "This button is for analyzing full LinkedIn posts. Use right-click for other text.";
-    }
-  } catch (e) {
-    console.error("Error querying tabs for URL:", e);
-    instructionTextP.textContent = "Select text & right-click to analyze, or use button for LinkedIn posts.";
-    analyzeBtn.disabled = true; // Default to disabled if tab check fails
-  }
+  // Button is now always enabled, text set in HTML. Instruction text also set in HTML.
+  // No initial dynamic disabling/text change needed for analyzeBtn based on URL.
+  analyzeBtn.disabled = false;
+  analyzeBtn.title = "Attempts to analyze the main content of the current page (Beta). For specific text, please highlight and right-click.";
 
 
   if (openOptionsLink) {
@@ -58,22 +44,14 @@ document.addEventListener('DOMContentLoaded', async function() {
         analyzeBtn.setAttribute('data-original-text', currentAnalyzeBtnText);
     }
     analyzeBtn.textContent = "Analyzing...";
-    analyzeBtn.disabled = true; // Always disable during loading
+    analyzeBtn.disabled = true;
   }
 
   function hideLoadingStateRestoreButton() {
     loadingMessage.style.display = 'none';
-    const originalText = analyzeBtn.getAttribute('data-original-text') || "Analyze LinkedIn Post";
+    const originalText = analyzeBtn.getAttribute('data-original-text') || "Analyze Full Page (Beta)";
     analyzeBtn.textContent = originalText;
-    // Re-evaluate disabled state based on current URL (important if user navigates while popup is open)
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-        const currentUrl = tabs[0] ? tabs[0].url : "";
-        if (currentUrl && (currentUrl.includes("linkedin.com/feed") || currentUrl.includes("linkedin.com/posts") || currentUrl.includes("linkedin.com/pulse"))) {
-            analyzeBtn.disabled = false;
-        } else {
-            analyzeBtn.disabled = true;
-        }
-    });
+    analyzeBtn.disabled = false; // Button is generally always enabled now
   }
 
   function renderResults(analysisData) {
@@ -96,74 +74,70 @@ document.addEventListener('DOMContentLoaded', async function() {
 
       if (data.analysisTimestamp && (Date.now() - data.analysisTimestamp < oneMinute)) {
         if (data.analysisTrigger === 'contextMenuLoading') {
-          showLoadingState(`💥 Analyzing: "${(data.selectedTextContent || "selected text").substring(0, 30)}..."`);
-          // Background is already performing analysis, wait for "contextAnalysisComplete" message
-          // or for trigger to become "contextMenuDone" on next check if message is missed.
+          showLoadingState(`💥 Analyzing selected text: "${(data.selectedTextContent || "").substring(0, 30)}..."`);
         } else if (data.analysisTrigger === 'contextMenuDone' && data.lastAnalysisResults) {
           renderResults(data.lastAnalysisResults);
           await chrome.storage.local.remove(['analysisTrigger', 'lastAnalysisResults', 'analysisTimestamp', 'selectedTextContent']);
         }
       } else {
-        // Clear stale data
         await chrome.storage.local.remove(['analysisTrigger', 'lastAnalysisResults', 'analysisTimestamp', 'selectedTextContent']);
       }
     } catch (e) { console.error("Error checking for context menu analysis:", e); }
   }
 
-  // Initial check when popup opens
   checkForContextMenuAnalysis();
 
-  // Listener for messages from background (e.g., when context menu analysis completes)
   chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === "contextAnalysisComplete" && request.results) {
-      console.log("Popup received contextAnalysisComplete message.");
       renderResults(request.results);
       chrome.storage.local.remove(['analysisTrigger', 'lastAnalysisResults', 'analysisTimestamp', 'selectedTextContent']);
       return true;
     }
   });
 
-  // --- LinkedIn "Analyze Post" Button Logic ---
-  analyzeBtn.addEventListener('click', async () => {
+  analyzeBtn.addEventListener('click', async () => { // Button now tries to analyze main content of ANY page
     showLoadingState(defaultLoadingMessage);
 
     try {
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-      // Button should only be clickable if already determined to be on LinkedIn via initial check
-      const settings = await chrome.storage.local.get(['apiKey']);
-      if (!settings.apiKey) {
-        hideLoadingStateRestoreButton();
-        configMessage.style.display = 'block';
-        return;
-      }
-      
-      let linkedInPostResponse;
-      try {
-          await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ['content.js'] });
-          linkedInPostResponse = await chrome.tabs.sendMessage(tab.id, { action: "getPostText" });
-      } catch (scriptErr) {
-          console.error("Error injecting or communicating with content script for LinkedIn:", scriptErr);
-          displayError(`Failed to get text from LinkedIn: ${scriptErr.message}. Try refreshing.`);
-          // hideLoadingStateRestoreButton(); // displayError calls it
+      if (tab && tab.id && !tab.url.startsWith("chrome://")) { // Check if tab is accessible
+        const settings = await chrome.storage.local.get(['apiKey']);
+        if (!settings.apiKey) {
+          hideLoadingStateRestoreButton();
+          configMessage.style.display = 'block';
           return;
-      }
+        }
+        
+        let pageContentResponse;
+        try {
+            await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ['content.js'] });
+            pageContentResponse = await chrome.tabs.sendMessage(tab.id, { action: "getPostText" }); // Action name kept for now
+        } catch (scriptErr) {
+            console.error("Error injecting or communicating with content script:", scriptErr);
+            displayError(`Failed to get text from page: ${scriptErr.message}. Try selecting text and right-clicking.`);
+            // hideLoadingStateRestoreButton(); // displayError calls it
+            return;
+        }
 
-      if (linkedInPostResponse && linkedInPostResponse.text) {
-        const analysisResults = await chrome.runtime.sendMessage({ 
-          action: "analyzeWithLLM", 
-          text: linkedInPostResponse.text 
-        });
-        renderResults(analysisResults);
-      } else if (linkedInPostResponse && linkedInPostResponse.error) {
-        displayError(linkedInPostResponse.error);
+        if (pageContentResponse && pageContentResponse.text) {
+          const analysisResults = await chrome.runtime.sendMessage({ 
+            action: "analyzeWithLLM", 
+            text: pageContentResponse.text 
+          });
+          renderResults(analysisResults);
+        } else if (pageContentResponse && pageContentResponse.error) {
+          displayError(pageContentResponse.error);
+        } else {
+          displayError("Could not extract main content from this page. Try selecting text and right-clicking.");
+        }
       } else {
-        displayError("Could not extract text from LinkedIn post. Ensure it's visible or try refreshing.");
+        displayError("Cannot analyze this page (e.g., internal Chrome page or no active tab).");
+        hideLoadingStateRestoreButton();
       }
     } catch (error) {
       console.error("Error in analyzeBtn:", error);
       displayError(`An error occurred: ${error.message}.`);
     }
-    // renderResults or displayError will call hideLoadingStateRestoreButton
   });
 
   function displayError(message) {
@@ -176,13 +150,13 @@ document.addEventListener('DOMContentLoaded', async function() {
   function displayAnalysis(llmResponse) {
     overviewSection.innerHTML = '';
     naughtinessSection.style.display = 'block';
-    tacticsSection.style.display = 'block'; // Assume show by default
+    tacticsSection.style.display = 'block';
     naughtinessRatingP.textContent = '';
     naughtinessJustificationP.textContent = '';
     tacticsContainer.innerHTML = '';
-    // Reset titles to default
-    naughtinessTitleH3.textContent = "Deceptiveness Score:";
-    tacticsTitleH3.textContent = "Key Manipulative Tactics / Observations:";
+    naughtinessTitleH3.textContent = "Deceptiveness Score:"; // Default title
+    tacticsTitleH3.textContent = "Key Manipulative Tactics / Observations:"; // Default title
+
 
     const overviewDiv = document.createElement('div');
     let summaryHtml = llmResponse.overall_assessment || "The AI offers no assessment. How mysterious!";
@@ -192,10 +166,11 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     if (llmResponse.is_satire_or_humor) {
         const satireP = document.createElement('p');
+        satireP.style.fontWeight = '600'; // Make "Comedy Assessment" part bold
         satireP.innerHTML = `<strong>Comedy Assessment:</strong> ${llmResponse.satire_explanation || "This piece appears to be using humor or satire!"}`;
-        overviewDiv.appendChild(satireP); // Add satire explanation to overview content
-        naughtinessSection.style.display = 'none'; // Hide naughtiness score section for satire
-        tacticsTitleH3.textContent = (llmResponse.key_manipulative_tactics && llmResponse.key_manipulative_tactics.length > 0) ? "Satirical Devices / Tropes Used:" : "Satirical Approach Noted";
+        overviewSection.appendChild(satireP);
+        naughtinessSection.style.display = 'none';
+        tacticsTitleH3.textContent = (llmResponse.key_manipulative_tactics && llmResponse.key_manipulative_tactics.length > 0) ? "Satirical Devices / Tropes Highlighted:" : "Satirical Approach Noted";
     } else {
         naughtinessRatingP.textContent = llmResponse.deceptiveness_score !== undefined ? `${llmResponse.deceptiveness_score} / 10` : "Not Rated";
         naughtinessJustificationP.textContent = llmResponse.score_justification || "No justification provided.";
@@ -223,10 +198,10 @@ document.addEventListener('DOMContentLoaded', async function() {
     } else {
       const noTacticsP = document.createElement('p');
       if (llmResponse.is_satire_or_humor) {
-        noTacticsP.textContent = "The comedian seems to rely on overall wit rather than specific listed tropes here!";
+        noTacticsP.textContent = "The humor here seems to rely on overall wit rather than specific rhetorical devices we're highlighting.";
       } else {
           const rating = parseInt(llmResponse.deceptiveness_score);
-          if (rating <=2 && llmResponse.overall_assessment && (llmResponse.overall_assessment.toLowerCase().includes("grace") || llmResponse.overall_assessment.toLowerCase().includes("hooray") || llmResponse.overall_assessment.toLowerCase().includes("straightforward") || llmResponse.overall_assessment.toLowerCase().includes("clear"))) {
+          if (rating <=3 && llmResponse.overall_assessment && (llmResponse.overall_assessment.toLowerCase().includes("grace") || llmResponse.overall_assessment.toLowerCase().includes("hooray") || llmResponse.overall_assessment.toLowerCase().includes("straightforward") || llmResponse.overall_assessment.toLowerCase().includes("clear"))) {
             noTacticsP.textContent = "The AI's assessment suggests a clear text. No specific manipulative tactics from our checklist were flagged.";
           } else {
             noTacticsP.textContent = "No specific manipulative tactics from our checklist were highlighted for this text.";
