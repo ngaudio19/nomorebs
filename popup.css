@@ -158,7 +158,6 @@ button#analyzeBtn:active:not(:disabled) {
   border-bottom: 1px solid var(--section-border-color);
 }
 
-/* Styles for Slippy's output structure */
 .slippy-remark {
   font-style: italic;
   color: var(--text-secondary);
@@ -170,13 +169,13 @@ button#analyzeBtn:active:not(:disabled) {
   border-radius: 4px;
 }
 
-#assessmentExplanation { /* Main area for Slippy's detailed thoughts */
+#assessmentExplanation { 
   margin-bottom: 10px;
   color: var(--text-primary);
   line-height: 1.7;
   font-size: 14px;
 }
-#assessmentExplanation strong, #assessmentExplanation em { /* For markdown like bold/italic */
+#assessmentExplanation strong, #assessmentExplanation em { 
     color: var(--text-primary); 
 }
 #assessmentExplanation strong {
@@ -185,10 +184,9 @@ button#analyzeBtn:active:not(:disabled) {
 #assessmentExplanation em {
     font-style: italic;
 }
-#assessmentExplanation p { /* If LLM nests paragraphs */
+#assessmentExplanation p { 
     margin-bottom: 0.5em;
 }
-
 
 #probabilityScore {
   font-size: 28px;
@@ -198,13 +196,23 @@ button#analyzeBtn:active:not(:disabled) {
   margin-bottom: 2px;
 }
 
-#probabilityConfidence {
+#slippyConfidence { /* This is the parent div for confidence text and eggs */
   font-size: 13px;
   color: var(--text-secondary);
   text-align: center;
   font-style: italic;
   margin-bottom: 10px;
+  display: flex; /* For aligning text and eggs */
+  align-items: center;
+  justify-content: center;
 }
+
+#confidenceEggs {
+  margin-left: 8px;
+  font-size: 1.2em; /* Adjust egg size if needed */
+  letter-spacing: 0.1em; /* Space out eggs slightly */
+}
+
 
 #keyPointsList {
   list-style-type: none;
