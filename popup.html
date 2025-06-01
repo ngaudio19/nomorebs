@@ -11,7 +11,7 @@
       <img src="images/icon48.png" alt="TFDYJS Logo" id="popupLogo" />
       <h1>TFDYJS</h1>
     </div>
-    <p id="instructionText" class="instruction">To analyze specific text, highlight it on any page, then right-click and choose 'TFDYJS: Analyze selection'.</p>
+    <p id="instructionText" class="instruction">To analyze, select text on any page, then right-click and choose 'TFDYJS: Analyze selection'.</p>
     <button id="analyzeBtn">Analyze Full Page (Beta)</button>
     <div id="statusMessages">
         <p id="loadingMessage" style="display:none;">💥 Truth serum activated!</p>
@@ -22,19 +22,31 @@
     </div>
     <div id="results" style="display:none;">
       <div id="llmResponseContainer">
-          <div id="overviewSection" class="analysis-section">
-            {/* Overall Assessment from LLM will go here */}
+          <div id="slippyOpening" class="analysis-section slippy-remark">
+            {/* Slippy's Opening Remark */}
           </div>
-          <div id="naughtinessSection" class="analysis-section">
-            <h3 id="naughtinessTitle">Deceptiveness Score:</h3>
-            <p id="naughtinessRating" class="rating-value"></p>
-            <p id="naughtinessJustification" class="justification-text"></p>
+
+          <div id="mainAssessmentSection" class="analysis-section">
+            <h3>Slippy's Scrutiny:</h3>
+            <div id="assessmentType"></div>
+            <div id="assessmentExplanation"></div>
           </div>
-          <div id="tacticsSection" class="analysis-section">
-            <h3 id="tacticsTitle">Key Manipulative Tactics / Observations:</h3>
-            <div id="tacticsContainer">
-              {/* Key tactics will be listed here */}
-            </div>
+
+          <div id="deceptionProbabilitySection" class="analysis-section">
+            <h3>Deception Probability Meter:</h3>
+            <p id="probabilityScore" class="rating-value"></p>
+            <p id="probabilityConfidence" class="justification-text"></p>
+          </div>
+
+          <div id="keyPointsSection" class="analysis-section">
+            <h3>Slippy's Key Observations:</h3>
+            <ul id="keyPointsList">
+              {/* Key Points for User will be list items here */}
+            </ul>
+          </div>
+
+          <div id="slippyClosing" class="analysis-section slippy-remark">
+            {/* Slippy's Closing Remark */}
           </div>
       </div>
     </div>
