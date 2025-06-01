@@ -3,11 +3,11 @@
 :root {
   --primary-orange: #fd6714;
   --main-bg: #FFFFFF;
-  --card-bg: #F4F4F4; /* For sections inside the white popup */
+  --card-bg: #F4F4F4; 
   --text-primary: #222222;
   --text-secondary: #666666;
-  --border-color: #000000; /* Main container border */
-  --section-border-color: #E0E0E0; /* Softer border for internal sections */
+  --border-color: #000000; 
+  --section-border-color: #E0E0E0; 
   --error-bg: #ffe0e0;
   --error-text: #8B0000;
   --error-border: #ffc0c0;
@@ -30,7 +30,7 @@ body {
   border: 3px solid var(--border-color);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   width: auto;
-  min-width: 350px; /* Ensure it's not too narrow */
+  min-width: 350px; 
   box-sizing: border-box;
 }
 
@@ -164,30 +164,29 @@ button#analyzeBtn:active:not(:disabled) {
   color: var(--text-secondary);
   padding: 10px 15px;
   border-left: 3px solid var(--primary-orange);
-  background-color: #E9E9E9; /* Slightly different background for remarks */
+  background-color: #E9E9E9; 
   margin-top: 10px;
   margin-bottom: 20px;
   border-radius: 4px;
 }
 
-#assessmentType {
-  font-weight: 600;
-  color: var(--primary-orange);
-  margin-bottom: 8px;
-  font-size: 1.1em; /* e.g., "Deception/Manipulation Analysis" */
-}
-
-#assessmentExplanation {
+#assessmentExplanation { /* Main area for Slippy's detailed thoughts */
   margin-bottom: 10px;
   color: var(--text-primary);
   line-height: 1.7;
+  font-size: 14px;
+}
+#assessmentExplanation strong, #assessmentExplanation em { /* For markdown like bold/italic */
+    color: var(--text-primary); 
 }
 #assessmentExplanation strong {
-    color: var(--text-primary); /* Keep strong black for emphasis */
     font-weight: 600;
 }
 #assessmentExplanation em {
     font-style: italic;
+}
+#assessmentExplanation p { /* If LLM nests paragraphs */
+    margin-bottom: 0.5em;
 }
 
 
@@ -215,81 +214,22 @@ button#analyzeBtn:active:not(:disabled) {
 #keyPointsList li {
   background-color: #FFFFFF;
   border: 1px solid var(--section-border-color);
-  padding: 10px 12px; /* Increased padding */
-  margin-bottom: 10px; /* Increased margin */
-  border-radius: 6px; /* More rounded */
+  padding: 10px 12px;
+  margin-bottom: 10px;
+  border-radius: 6px;
   font-size: 13px;
   color: var(--text-primary);
   line-height: 1.5;
 }
 #keyPointsList li::before {
   content: "🦉";
-  margin-right: 10px; /* More space for owl */
+  margin-right: 10px;
   color: var(--primary-orange);
-  font-size: 1.1em; /* Slightly larger owl */
+  font-size: 1.1em;
 }
 #keyPointsList li strong {
     font-weight: 600;
 }
 #keyPointsList li em {
     font-style: italic;
-}
-
-/* Ensure overview section also handles markdown if used */
-#overviewSection div,
-#overviewSection p {
-    font-size: 14px;
-    color: var(--text-primary);
-    line-height: 1.7;
-}
-#overviewSection strong {
-    color: var(--text-primary); /* Keep strong black for emphasis */
-    font-weight: 600;
-}
-#overviewSection em {
-    font-style: italic;
-}
-
-/* Fallback for old structure if it ever appears - can be removed later */
-.fallacy-item, .tactic-item {
-  margin-bottom: 12px;
-  padding: 12px;
-  border-radius: 6px;
-  background-color: #FFFFFF;
-  border: 1px solid var(--section-border-color);
-}
-.fallacy-type, .tactic-type { /* Unused now, but kept for a moment */
-  font-weight: 600;
-  color: var(--primary-orange);
-  margin-bottom: 6px;
-  font-size: 14px;
-}
-.fallacy-quote, .tactic-quote {
-  font-style: italic;
-  color: var(--text-secondary);
-  margin-bottom: 8px;
-  padding: 8px 10px;
-  border-left: 3px solid var(--primary-orange);
-  font-size: 13px;
-  background-color: #E9E9E9;
-  display: block;
-  border-radius: 3px;
-}
-.fallacy-explanation, .tactic-explanation {
-  color: var(--text-primary);
-  font-size: 13px;
-}
-.learn-more { /* Unused now, but kept for a moment */
-  font-size: 12px;
-  color: var(--primary-orange);
-  cursor: pointer;
-  text-decoration: none;
-  display: inline-block;
-  margin-top: 8px;
-  font-weight: 500;
-  border-bottom: 1px dotted var(--primary-orange);
-}
-.learn-more:hover {
-    color: #ff8533;
-    border-bottom: 1px solid #ff8533;
 }
