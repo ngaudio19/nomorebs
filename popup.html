@@ -11,9 +11,8 @@
       <img src="images/icon48.png" alt="TFDYJS Logo" id="popupLogo" />
       <h1>TFDYJS</h1>
     </div>
-    <p class="instruction">Simply click the extension icon and then highlight the text you'd like us to analyze.</p>
-    <div id="motivationalCopy" class="motivational-copy"></div>
-    <button id="analyzeBtn">Unmask the Shenanigans!</button>
+    <p id="instructionText" class="instruction">To analyze, select text on any page, then right-click and choose 'TFDYJS: Analyze selection'.</p>
+    <button id="analyzeBtn">Analyze LinkedIn Post</button>
     <div id="statusMessages">
         <p id="loadingMessage" style="display:none;">💥 Truth serum activated!</p>
         <p id="errorMessage" class="error-message" style="display:none;"></p>
@@ -24,17 +23,17 @@
     <div id="results" style="display:none;">
       <div id="llmResponseContainer">
           <div id="overviewSection" class="analysis-section">
-            {/* Summary/Overview from LLM will go here */}
+            {/* Overall Assessment from LLM will go here */}
           </div>
           <div id="naughtinessSection" class="analysis-section">
-            <h3>Naughtiness Score:</h3>
+            <h3 id="naughtinessTitle">Deceptiveness Score:</h3>
             <p id="naughtinessRating" class="rating-value"></p>
             <p id="naughtinessJustification" class="justification-text"></p>
           </div>
-          <div id="fallaciesSection" class="analysis-section">
-            <h3>Identified Logical Pitfalls:</h3>
-            <div id="fallaciesContainer">
-              {/* Detected fallacies will be listed here */}
+          <div id="tacticsSection" class="analysis-section">
+            <h3 id="tacticsTitle">Key Manipulative Tactics / Observations:</h3>
+            <div id="tacticsContainer">
+              {/* Key tactics will be listed here */}
             </div>
           </div>
       </div>
